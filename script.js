@@ -1,169 +1,209 @@
-const products = [
-    {
-        id: 1,
-        name: 'V60',
-        image: 'V60.PNG',
-        price: 26,
-        category: 'V60',
-        options: [
-            { name: 'Lollipop', price: 26, image: 'Lollipop .PNG' },
-            { name: 'Snickers', price: 26, image: 'Snickers .PNG' },
-            { name: 'Tobacco', price: 26, image: 'Tobacco .PNG' },
-            { name: 'Crème brûlée', price: 26, image: 'Crème brûlé.PNG' }
+// ===== بيانات المنتجات =====
+const products = {
+    V60: {
+        label: '☕ V60',
+        mainImage: 'images/V60.PNG',
+        items: [
+            { id: 1, name: 'Lollipop',      image: 'images/Lollipop .PNG',   price: 26 },
+            { id: 2, name: 'Snickers',       image: 'images/Snickers .PNG',   price: 26 },
+            { id: 3, name: 'Tobacco',        image: 'images/Tobacco .PNG',    price: 26 },
+            { id: 4, name: 'Crème brûlée',   image: 'images/Crème brûlé.PNG', price: 26 }
         ]
     },
-    {
-        id: 2,
-        name: 'Ice Americano',
-        image: 'V60.PNG',
-        price: 17,
-        category: 'ESPRESSO'
-    },
-    {
-        id: 3,
-        name: 'Foame Espresso',
-        image: 'Fome.PNG',
-        price: 25,
-        category: 'ESPRESSO'
-    },
-    {
-        id: 4,
-        name: 'Dark Foame Espresso',
-        image: 'Fome.PNG',
-        price: 27,
-        category: 'ESPRESSO'
-    },
-    {
-        id: 5,
-        name: 'Foame Matcha',
-        image: 'Matcha.PNG',
-        price: 29,
-        category: 'MATCHA',
-        options: [
-            { name: 'Milk', price: 29, image: 'Matcha.PNG' },
-            { name: 'Coconut Milk', price: 32, image: 'Matcha.PNG' }
+    ESPRESSO: {
+        label: '☕ ESPRESSO',
+        items: [
+            { id: 5, name: 'Ice Americano',      image: '',             price: 17 },
+            { id: 6, name: 'Foame Espresso',     image: 'images/Fome.PNG', price: 25 },
+            { id: 7, name: 'Dark Foame Espresso', image: '',            price: 27 }
         ]
     },
-    {
-        id: 6,
-        name: 'Hibiscus',
-        image: 'V60.PNG',
-        price: 13,
-        category: 'HIBISCUS'
+    MATCHA: {
+        label: '🍵 MATCHA',
+        items: [
+            { id: 8, name: 'Foame Matcha', image: 'images/Matcha.PNG', price: 29, coconutOption: true }
+        ]
     },
-    {
-        id: 7,
-        name: 'Rocky road',
-        image: 'Rocky road .jpg',
-        category: 'DESERT',
-        options: [
-            { name: '2 pieces', price: 12, image: 'Rocky road .jpg' },
-            { name: 'Full Box (24 pieces)', price: 135, note: 'طلب مسبق بيومين', image: 'Rocky road .jpg' }
+    HIBISCUS: {
+        label: '🌺 HIBISCUS',
+        items: [
+            { id: 9, name: 'Hibiscus', image: '', price: 13 }
+        ]
+    },
+    DESERT: {
+        label: '🍫 DESERT',
+        items: [
+            { id: 10, name: 'Rocky road – 2 pieces', image: 'images/Rocky road .jpg', price: 12 }
         ]
     }
-];
+};
 
 let cart = [];
-let currentCategory = '';
 
+// ===== تهيئة =====
 function init() {
     loadCart();
     renderProducts();
 }
 
+// ===== رسم المنتجات =====
 function renderProducts() {
-    const grid = document.getElementById('products-grid');
-    grid.innerHTML = '';
-    currentCategory = '';
+    const list = document.getElementById('products-list');
+    list.innerHTML = '';
 
-    products.forEach(product => {
-        if (product.category !== currentCategory) {
-            currentCategory = product.category;
-            const header = document.createElement('div');
-            header.className = 'category-header';
-            header.textContent = currentCategory;
-            grid.appendChild(header);
-        }
+    Object.entries(products).forEach(([catKey, cat]) => {
+        const section = document.createElement('div');
+        section.className = 'category-section';
 
-        const card = document.createElement('div');
-        card.className = 'product-card';
+        const title = document.createElement('div');
+        title.className = 'category-title';
+        title.textContent = cat.label;
+        section.appendChild(title);
 
-        let optionsHTML = '';
-        if (product.options) {
-            optionsHTML = '<div class="options-group">';
-            product.options.forEach((opt, idx) => {
-                optionsHTML += `<label><input type="radio" name="opt-${product.id}" value="${idx}" ${idx === 0 ? 'checked' : ''}> ${opt.name}</label>`;
+        if (catKey === 'V60') {
+            // صورة V60 الرئيسية
+            if (cat.mainImage) {
+                const mainImg = document.createElement('img');
+                mainImg.src = cat.mainImage;
+                mainImg.alt = 'V60';
+                mainImg.className = 'v60-main-img';
+                mainImg.onerror = () => { mainImg.style.display = 'none'; };
+                section.appendChild(mainImg);
+            }
+
+            // شبكة النكهات
+            const grid = document.createElement('div');
+            grid.className = 'v60-flavors';
+
+            cat.items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'v60-flavor-card';
+                card.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" class="v60-flavor-img"
+                         onerror="this.style.background='linear-gradient(135deg,#d4a46a,#C19A6B)';this.style.display='block';">
+                    <div class="v60-flavor-info">
+                        <span class="v60-flavor-name">${item.name}</span>
+                        <span class="v60-flavor-price">${item.price} AED</span>
+                    </div>
+                    <div class="v60-flavor-actions">
+                        <input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">
+                        <button class="add-btn" onclick="addToCart(${item.id}, '${catKey}')">+ أضف</button>
+                    </div>
+                `;
+                grid.appendChild(card);
             });
-            optionsHTML += '</div>';
+
+            section.appendChild(grid);
+
+        } else if (catKey === 'MATCHA') {
+            cat.items.forEach(item => {
+                const row = document.createElement('div');
+                row.innerHTML = buildProductRow(item, catKey);
+                section.appendChild(row.firstElementChild);
+
+                // خيار Coconut Milk
+                const coconut = document.createElement('div');
+                coconut.className = 'coconut-option';
+                coconut.id = `coconut-wrapper-${item.id}`;
+                coconut.innerHTML = `
+                    <label>
+                        <input type="checkbox" id="coconut-${item.id}">
+                        Coconut Milk <strong>+3 AED</strong>
+                    </label>
+                `;
+                section.appendChild(coconut);
+            });
+
+        } else {
+            // باقي الفئات: قائمة بسيطة
+            cat.items.forEach(item => {
+                const row = document.createElement('div');
+                row.innerHTML = buildProductRow(item, catKey);
+                section.appendChild(row.firstElementChild);
+            });
         }
 
-        const displayImage = product.options ? product.options[0].image : product.image;
-        const displayPrice = product.options ? product.options[0].price : product.price;
-
-        card.innerHTML = `
-            <div class="product-image">
-                <img src="${displayImage}" alt="${product.name}" onerror="this.style.display='none'">
-            </div>
-            <div class="product-info">
-                <div class="product-name">${product.name}</div>
-                <div class="product-price">${displayPrice} AED</div>
-                ${optionsHTML}
-                <div class="product-actions">
-                    <input type="number" id="qty-${product.id}" class="qty-input" value="1" min="1" max="10">
-                    <button class="add-btn" onclick="addToCart(${product.id})">أضف</button>
-                </div>
-            </div>
-        `;
-        grid.appendChild(card);
+        list.appendChild(section);
     });
 }
 
-function addToCart(productId) {
-    const product = products.find(p => p.id === productId);
-    const qty = parseInt(document.getElementById(`qty-${productId}`).value);
-    let selectedOption = null;
+function buildProductRow(item, catKey) {
+    const imgHTML = item.image
+        ? `<img src="${item.image}" alt="${item.name}" class="product-thumb"
+               onerror="this.style.display='none'">`
+        : '';
 
-    if (product.options) {
-        const optionIndex = parseInt(document.querySelector(`input[name="opt-${productId}"]:checked`).value);
-        selectedOption = product.options[optionIndex];
+    return `
+        <div class="product-row">
+            <div class="product-row-left">
+                ${imgHTML}
+                <div>
+                    <div class="product-row-name">${item.name}</div>
+                </div>
+            </div>
+            <div class="product-row-right">
+                <span class="price-tag">${item.price} AED</span>
+                <input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">
+                <button class="add-btn" onclick="addToCart(${item.id}, '${catKey}')">+ أضف</button>
+            </div>
+        </div>
+    `;
+}
+
+// ===== إضافة للسلة =====
+function addToCart(itemId, catKey) {
+    const item = products[catKey].items.find(i => i.id === itemId);
+    const qty = parseInt(document.getElementById(`qty-${itemId}`).value) || 1;
+    let finalPrice = item.price;
+    let itemName = item.name;
+
+    // Coconut milk add-on
+    const coconutCheckbox = document.getElementById(`coconut-${itemId}`);
+    if (coconutCheckbox && coconutCheckbox.checked) {
+        finalPrice += 3;
+        itemName += ' (Coconut Milk)';
     }
 
-    const finalPrice = selectedOption ? selectedOption.price : product.price;
-    const itemName = selectedOption ? `${product.name} - ${selectedOption.name}` : product.name;
-    const note = selectedOption ? (selectedOption.note || '') : '';
+    const key = `${itemId}-${itemName}`;
+    const existing = cart.find(c => c.key === key);
 
-    const existingItem = cart.find(item => item.id === productId && item.selectedOption === JSON.stringify(selectedOption));
-
-    if (existingItem) {
-        existingItem.quantity += qty;
+    if (existing) {
+        existing.quantity += qty;
     } else {
-        cart.push({
-            id: productId,
-            name: itemName,
-            price: finalPrice,
-            quantity: qty,
-            selectedOption: JSON.stringify(selectedOption),
-            note: note
-        });
+        cart.push({ key, id: itemId, name: itemName, price: finalPrice, quantity: qty });
     }
 
     saveCart();
     updateCartCount();
-    alert('تم إضافة المنتج للسلة! ✓');
-    document.getElementById(`qty-${productId}`).value = 1;
+
+    const btn = document.querySelector(`button.add-btn[onclick="addToCart(${itemId}, '${catKey}')"]`);
+    if (btn) {
+        const orig = btn.textContent;
+        btn.textContent = '✓ تمت الإضافة';
+        btn.style.backgroundColor = '#4CAF50';
+        setTimeout(() => {
+            btn.textContent = orig;
+            btn.style.backgroundColor = '';
+        }, 1200);
+    }
+
+    document.getElementById(`qty-${itemId}`).value = 1;
+    if (coconutCheckbox) coconutCheckbox.checked = false;
 }
 
+// ===== تحديث عداد السلة =====
 function updateCartCount() {
-    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const count = cart.reduce((s, i) => s + i.quantity, 0);
     document.getElementById('cart-count').textContent = count;
 }
 
+// ===== رسم السلة =====
 function renderCart() {
     const container = document.getElementById('cart-items');
     const totalEl = document.getElementById('total');
 
     if (cart.length === 0) {
-        container.innerHTML = '<div class="empty-cart">السلة فارغة!</div>';
+        container.innerHTML = '<div class="empty-cart">السلة فارغة 🛒</div>';
         totalEl.textContent = '0';
         return;
     }
@@ -174,17 +214,14 @@ function renderCart() {
     cart.forEach((item, idx) => {
         const itemTotal = item.price * item.quantity;
         total += itemTotal;
-        const noteHTML = item.note ? `<div style="font-size: 0.8rem; color: #d9534f;">⚠️ ${item.note}</div>` : '';
-
         html += `
             <div class="cart-item">
-                <button class="remove-btn" onclick="removeFromCart(${idx})">حذف</button>
                 <div class="cart-item-info">
                     <div class="cart-item-name">${item.name}</div>
-                    <div class="cart-item-qty">الكمية: ${item.quantity}</div>
-                    ${noteHTML}
+                    <div class="cart-item-qty">الكمية: ${item.quantity} × ${item.price} AED</div>
                 </div>
-                <div class="cart-item-price">${itemTotal} AED</div>
+                <span class="cart-item-price">${itemTotal} AED</span>
+                <button class="remove-btn" onclick="removeFromCart(${idx})" title="حذف">✕</button>
             </div>
         `;
     });
@@ -200,21 +237,27 @@ function removeFromCart(idx) {
     renderCart();
 }
 
+// ===== localStorage =====
 function saveCart() {
     localStorage.setItem('cozCart', JSON.stringify(cart));
 }
 
 function loadCart() {
-    const saved = localStorage.getItem('cozCart');
-    if (saved) {
-        cart = JSON.parse(saved);
-        updateCartCount();
+    try {
+        const saved = localStorage.getItem('cozCart');
+        if (saved) {
+            cart = JSON.parse(saved);
+            updateCartCount();
+        }
+    } catch (e) {
+        cart = [];
     }
 }
 
-function showSection(sectionId) {
+// ===== التنقل =====
+function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.getElementById(sectionId).classList.add('active');
+    document.getElementById(id).classList.add('active');
 }
 
 function goHome() {
@@ -227,10 +270,10 @@ function goProducts() {
     showSection('products');
 }
 
+// ===== مودالات =====
 function showMenuModal() {
     document.getElementById('menu-modal').classList.add('active');
 }
-
 function closeMenuModal() {
     document.getElementById('menu-modal').classList.remove('active');
 }
@@ -239,115 +282,17 @@ function showCartModal() {
     renderCart();
     document.getElementById('cart-modal').classList.add('active');
 }
-
 function closeCartModal() {
     document.getElementById('cart-modal').classList.remove('active');
 }
 
 function goCheckout() {
-    if (cart.length === 0) {
-        alert('السلة فارغة!');
-        return;
-    }
+    if (cart.length === 0) { alert('السلة فارغة!'); return; }
     closeCartModal();
     document.getElementById('checkout-modal').classList.add('active');
 }
-
 function closeCheckoutModal() {
     document.getElementById('checkout-modal').classList.remove('active');
-}
-
-function submitOrder(event) {
-    event.preventDefault();
-    
-    const name = document.getElementById('name').value;
-    const phone = document.getElementById('phone').value;
-    const address = document.getElementById('address').value;
-    const payment = document.getElementById('payment').value;
-
-    if (!name || !phone || !address || !payment) {
-        alert('يرجى ملء جميع الحقول');
-        return;
-    }
-
-    const orderId = 'ORD-' + Date.now();
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-    const order = {
-        orderId: orderId,
-        name: name,
-        phone: phone,
-        address: address,
-        payment: payment,
-        items: [...cart],
-        total: total,
-        date: new Date().toLocaleString('ar-SA'),
-        status: 'قيد المعالجة'
-    };
-
-    showOrderDetails(order);
-    closeCheckoutModal();
-    
-    document.getElementById('checkout-form').reset();
-    cart = [];
-    saveCart();
-    updateCartCount();
-}
-
-function showOrderDetails(order) {
-    let itemsHTML = '';
-    order.items.forEach(item => {
-        const noteHTML = item.note ? `<div style="font-size: 0.8rem; color: #d9534f;">⚠️ ${item.note}</div>` : '';
-        itemsHTML += `
-            <div class="order-row">
-                <span>${item.price * item.quantity} AED</span>
-                <span>${item.quantity} × ${item.name}</span>
-            </div>
-            ${noteHTML}
-        `;
-    });
-
-    const detailsHTML = `
-        <div class="order-success">✓ تم تأكيد الطلب بنجاح!</div>
-        <div class="order-row">
-            <strong>${order.orderId}</strong>
-            <strong>رقم الطلب:</strong>
-        </div>
-        <div class="order-row">
-            <span>${order.date}</span>
-            <strong>التاريخ:</strong>
-        </div>
-        <div class="order-row">
-            <span>${order.name}</span>
-            <strong>الاسم:</strong>
-        </div>
-        <div class="order-row">
-            <span>${order.phone}</span>
-            <strong>الهاتف:</strong>
-        </div>
-        <div class="order-row">
-            <span>${order.address}</span>
-            <strong>العنوان:</strong>
-        </div>
-        <div class="order-row">
-            <span>${order.payment}</span>
-            <strong>طريقة الدفع:</strong>
-        </div>
-        <hr style="margin: 1rem 0;">
-        <strong>المنتجات:</strong>
-        ${itemsHTML}
-        <div class="order-row order-total">
-            <span>${order.total} AED</span>
-            <strong>الإجمالي:</strong>
-        </div>
-        <div class="order-status">
-            حالة الطلب: ${order.status}
-        </div>
-        <p style="margin-top: 1rem; font-size: 0.9rem; color: #666; text-align: center;">سيتم التواصل معك قريباً لتأكيد الطلب والتسليم</p>
-    `;
-
-    document.getElementById('order-content').innerHTML = detailsHTML;
-    document.getElementById('order-modal').classList.add('active');
 }
 
 function closeOrderModal() {
@@ -355,10 +300,69 @@ function closeOrderModal() {
 }
 
 function closeAllModals() {
-    closeMenuModal();
-    closeCartModal();
+    ['menu-modal','cart-modal','checkout-modal','order-modal'].forEach(id => {
+        document.getElementById(id).classList.remove('active');
+    });
+}
+
+// إغلاق عند النقر خارج المودال
+document.addEventListener('click', e => {
+    if (e.target.classList.contains('modal')) {
+        e.target.classList.remove('active');
+    }
+});
+
+// ===== تأكيد الطلب =====
+function submitOrder(event) {
+    event.preventDefault();
+
+    const name    = document.getElementById('cust-name').value.trim();
+    const phone   = document.getElementById('cust-phone').value.trim();
+    const address = document.getElementById('cust-address').value.trim();
+    const payment = document.getElementById('cust-payment').value;
+
+    if (!name || !phone || !address || !payment) {
+        alert('يرجى ملء جميع الحقول');
+        return;
+    }
+
+    const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    const orderId = 'ORD-' + Date.now();
+
+    let itemsHTML = '';
+    cart.forEach(item => {
+        itemsHTML += `
+            <div class="order-row">
+                <span>${item.name}</span>
+                <span>${item.quantity} × ${item.price} = ${item.quantity * item.price} AED</span>
+            </div>
+        `;
+    });
+
+    const detailsHTML = `
+        <div class="order-success">✓ تم تأكيد الطلب بنجاح!</div>
+        <div class="order-row"><span>رقم الطلب</span><strong>${orderId}</strong></div>
+        <div class="order-row"><span>الاسم</span><span>${name}</span></div>
+        <div class="order-row"><span>الهاتف</span><span>${phone}</span></div>
+        <div class="order-row"><span>العنوان</span><span>${address}</span></div>
+        <div class="order-row"><span>الدفع</span><span>${payment}</span></div>
+        <hr style="margin:0.75rem 0;border-color:#f0e8e0">
+        ${itemsHTML}
+        <div class="order-row order-total">
+            <span>الإجمالي</span>
+            <span>${total} AED</span>
+        </div>
+        <div class="order-status">⏳ قيد المعالجة – سيتم التواصل معك قريباً</div>
+    `;
+
+    document.getElementById('order-content').innerHTML = detailsHTML;
     closeCheckoutModal();
-    closeOrderModal();
+    document.getElementById('order-modal').classList.add('active');
+
+    document.getElementById('checkout-form').reset();
+    cart = [];
+    saveCart();
+    updateCartCount();
 }
 
 document.addEventListener('DOMContentLoaded', init);
