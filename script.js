@@ -9,13 +9,13 @@ const products = [
             { name: 'Lollipop', price: 26, image: 'Lollipop .PNG' },
             { name: 'Snickers', price: 26, image: 'Snickers .PNG' },
             { name: 'Tobacco', price: 26, image: 'Tobacco .PNG' },
-            { name: 'Crème brûlée', price: 26, image: 'Crème brûlé.PNG' }
+            { name: 'Crème brûlée', price: 26, image: 'Creme-brulee.PNG' }
         ]
     },
     {
         id: 2,
         name: 'Ice Americano',
-        image: 'V60.PNG',
+        image: 'Espresso .PNG',
         price: 17,
         category: 'ESPRESSO'
     },
