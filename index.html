@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COZ - متجر القهوة</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="Coz logo.PNG" alt="شعار COZ" class="logo">
+                <h1>COZ</h1>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn" onclick="goHome()">الرئيسية</button>
+                <button class="nav-btn" onclick="goProducts()">الطلب</button>
+                <button class="nav-btn menu-btn" onclick="showMenuModal()">القائمة</button>
+                <button class="nav-btn cart-btn" onclick="showCartModal()">السلة (<span id="cart-count">0</span>)</button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- الصفحة الرئيسية -->
+        <section id="home" class="section active">
+            <div class="hero">
+                <h2>أهلاً بك في COZ ☕</h2>
+                <p>أفضل قهوة بأسعار رائعة</p>
+                <button class="btn" onclick="goProducts()">ابدأ الطلب</button>
+            </div>
+        </section>
+
+        <!-- صفحة المنتجات -->
+        <section id="products" class="section">
+            <div class="container">
+                <h2>قائمة المنتجات</h2>
+                <div id="products-grid" class="products-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- نافذة القائمة -->
+    <div id="menu-modal" class="modal">
+        <div class="modal-content menu-modal">
+            <button class="close-btn" onclick="closeMenuModal()">&times;</button>
+            <img src="Coz menu.PNG" alt="قائمة المنتجات" class="menu-image">
+        </div>
+    </div>
+
+    <!-- نافذة السلة -->
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeCartModal()">&times;</button>
+            <h2>سلة الشراء</h2>
+            <div id="cart-items"></div>
+            <div class="cart-footer">
+                <h3>الإجمالي: <span id="total">0</span> AED</h3>
+                <button class="btn" onclick="goCheckout()">الدفع</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة الدفع -->
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeCheckoutModal()">&times;</button>
+            <h2>إتمام الطلب</h2>
+            <form id="checkout-form" onsubmit="submitOrder(event)">
+                <input type="text" id="name" placeholder="الاسم الكامل" required>
+                <input type="tel" id="phone" placeholder="رقم الهاتف" required>
+                <input type="text" id="address" placeholder="العنوان" required>
+                <select id="payment" required>
+                    <option value="">اختر طريقة الدفع</option>
+                    <option value="عند الاستلام">عند الاستلام</option>
+                    <option value="Zain Pay">Zain Pay</option>
+                </select>
+                <button type="submit" class="btn">تأكيد الطلب</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة تأكيد الطلب -->
+    <div id="order-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeOrderModal()">&times;</button>
+            <div id="order-content"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
