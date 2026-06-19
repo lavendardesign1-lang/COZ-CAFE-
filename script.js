@@ -65,7 +65,7 @@ const productsAr = {
     DESERT: {
         label: '🍫 DESERT',
         items: [
-            { id: 10, name: 'Rocky road – 2 pieces', image: 'images/Rocky road .jpg', price: 12 }
+            { id: 10, name: 'RockyRoad – 2 pieces', image: 'images/Rocky road .jpg', price: 12 }
         ]
     }
 };
