@@ -145,7 +145,7 @@ header {
 main {
     max-width: 900px;
     margin: 0 auto;
-    padding: 140px 1rem 1.5rem;
+    padding: 180px 1rem 1.5rem;
     min-height: calc(100vh - 120px);
 }
 
@@ -659,7 +659,7 @@ main {
     }
 
     main {
-        padding: 150px 1rem 1.5rem;
+        padding: 190px 1rem 1.5rem;
     }
 
     .logo {
