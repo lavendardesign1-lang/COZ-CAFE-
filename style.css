@@ -13,20 +13,20 @@ body {
     background-size: cover;
     background-attachment: fixed;
     background-position: center center;
-    color: #333;
+    color: #6B4423;
     min-height: 100vh;
     direction: rtl;
 }
 
 /* ===== HEADER ===== */
 header {
-    background-color: #6B4423;
-    color: white;
-    padding: 0.75rem 0;
+    background-color: transparent;
+    color: #6B4423;
+    padding: 1rem 0;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    box-shadow: none;
 }
 
 .header-content {
@@ -37,24 +37,24 @@ header {
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
+    flex-direction: column;
 }
 
 .logo-section {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    justify-content: center;
 }
 
 .logo {
-    height: 48px;
+    height: 80px;
     width: auto;
     object-fit: contain;
 }
 
 .logo-section h1 {
-    font-size: 1.6rem;
-    font-weight: bold;
-    letter-spacing: 2px;
+    display: none;
 }
 
 .nav-menu {
@@ -62,33 +62,35 @@ header {
     gap: 0.5rem;
     align-items: center;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .nav-btn {
     background: none;
     border: none;
-    color: white;
+    color: #6B4423;
     cursor: pointer;
     font-size: 0.95rem;
     padding: 0.4rem 0.85rem;
     border-radius: 20px;
     transition: background-color 0.25s, opacity 0.25s;
     font-family: inherit;
+    font-weight: 500;
 }
 
 .nav-btn:hover {
-    background-color: rgba(255,255,255,0.15);
+    background-color: rgba(107, 68, 35, 0.1);
 }
 
 .order-btn {
-    background-color: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.4);
+    background-color: transparent;
+    border: 1px solid #6B4423;
 }
 
 .menu-btn,
 .cart-btn {
     background-color: #C19A6B;
-    color: #3a1f00;
+    color: white;
     font-weight: bold;
 }
 
@@ -112,7 +114,7 @@ main {
     max-width: 900px;
     margin: 0 auto;
     padding: 1.5rem 1rem;
-    min-height: calc(100vh - 72px);
+    min-height: calc(100vh - 120px);
 }
 
 .section {
@@ -125,12 +127,7 @@ main {
 
 /* ===== HERO ===== */
 .hero {
-    background: linear-gradient(135deg, rgba(107, 68, 35, 0.92) 0%, rgba(160, 115, 70, 0.92) 100%);
-    color: white;
-    padding: 80px 20px;
-    text-align: center;
-    border-radius: 14px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    display: none;
 }
 
 .hero h2 {
@@ -147,7 +144,7 @@ main {
 /* ===== BUTTONS ===== */
 .btn {
     background-color: #C19A6B;
-    color: #3a1f00;
+    color: white;
     padding: 11px 28px;
     border: none;
     border-radius: 25px;
@@ -197,12 +194,13 @@ main {
 .category-title {
     font-size: 1.15rem;
     font-weight: bold;
-    color: white;
-    background-color: #6B4423;
+    color: #6B4423;
+    background-color: transparent;
     padding: 0.5rem 1rem;
     border-radius: 8px;
     margin-bottom: 0.75rem;
     letter-spacing: 1px;
+    border-bottom: 2px solid #C19A6B;
 }
 
 /* ===== V60 SPECIAL SECTION ===== */
@@ -303,7 +301,7 @@ main {
 .product-row-name {
     font-size: 0.95rem;
     font-weight: bold;
-    color: #4a2c10;
+    color: #6B4423;
 }
 
 .product-row-sub {
@@ -334,7 +332,7 @@ main {
     align-items: center;
     gap: 0.4rem;
     font-size: 0.8rem;
-    color: #666;
+    color: #6B4423;
     padding: 0.3rem 0.75rem;
     background: #f9f3ee;
     border-radius: 6px;
@@ -370,7 +368,7 @@ main {
 }
 
 .add-btn {
-    background-color: #6B4423;
+    background-color: #C19A6B;
     color: white;
     padding: 6px 14px;
     border: none;
@@ -383,7 +381,7 @@ main {
 }
 
 .add-btn:hover {
-    background-color: #5a3519;
+    background-color: #B8956A;
 }
 
 /* ===== MODALS ===== */
