@@ -40,6 +40,33 @@ header {
     flex-direction: column;
 }
 
+.lang-switcher {
+    display: flex;
+    gap: 0.5rem;
+    position: absolute;
+    left: 1.25rem;
+    top: 1rem;
+}
+
+.lang-btn {
+    background: transparent;
+    border: 1px solid #6B4423;
+    color: #6B4423;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-family: inherit;
+}
+
+.lang-btn:hover,
+.lang-btn.active {
+    background-color: #6B4423;
+    color: white;
+}
+
 .logo-section {
     display: flex;
     align-items: center;
@@ -89,19 +116,20 @@ header {
 
 .menu-btn,
 .cart-btn {
-    background-color: #C19A6B;
-    color: white;
+    background-color: transparent;
+    color: #6B4423;
     font-weight: bold;
+    border: none;
 }
 
 .menu-btn:hover,
 .cart-btn:hover {
-    background-color: #B8956A;
+    background-color: rgba(107, 68, 35, 0.1);
 }
 
 .cart-badge {
-    background-color: white;
-    color: #6B4423;
+    background-color: #C19A6B;
+    color: white;
     border-radius: 50%;
     padding: 1px 6px;
     font-size: 0.8rem;
@@ -615,6 +643,13 @@ main {
         justify-content: center;
     }
 
+    .lang-switcher {
+        position: relative;
+        left: auto;
+        top: auto;
+        margin-bottom: 0.5rem;
+    }
+
     .hero h2 {
         font-size: 1.6rem;
     }
@@ -631,4 +666,14 @@ main {
         width: 96%;
         padding: 1.25rem;
     }
+}
+
+/* ===== LTR (English) ===== */
+body.en {
+    direction: ltr;
+}
+
+body.en .lang-switcher {
+    left: auto;
+    right: 1.25rem;
 }
