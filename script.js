@@ -1,5 +1,37 @@
+// ===== Language Management =====
+let currentLang = 'ar';
+
+function changeLanguage(lang) {
+    currentLang = lang;
+    document.body.className = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+    // Update all elements with data-ar and data-en
+    document.querySelectorAll('[data-ar][data-en]').forEach(el => {
+        el.textContent = el.getAttribute(`data-${lang}`);
+    });
+
+    // Update input placeholders
+    document.querySelectorAll('[data-ar-placeholder][data-en-placeholder]').forEach(el => {
+        el.placeholder = el.getAttribute(`data-${lang}-placeholder`);
+    });
+
+    // Update active language button
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-lang') === lang) {
+            btn.classList.add('active');
+        }
+    });
+
+    // Re-render products to apply language changes
+    renderProducts();
+    localStorage.setItem('cozLang', lang);
+}
+
 // ===== بيانات المنتجات =====
-const products = {
+const productsAr = {
     V60: {
         label: '☕ V60',
         mainImage: 'images/V60.PNG',
@@ -38,12 +70,28 @@ const products = {
     }
 };
 
+let products = productsAr;
 let cart = [];
 
 // ===== تهيئة =====
 function init() {
+    loadLang();
     loadCart();
     renderProducts();
+    setupLanguageButtons();
+}
+
+function loadLang() {
+    const saved = localStorage.getItem('cozLang') || 'ar';
+    changeLanguage(saved);
+}
+
+function setupLanguageButtons() {
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            changeLanguage(btn.getAttribute('data-lang'));
+        });
+    });
 }
 
 // ===== رسم المنتجات =====
@@ -87,7 +135,7 @@ function renderProducts() {
                     </div>
                     <div class="v60-flavor-actions">
                         <input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">
-                        <button class="add-btn" onclick="addToCart(${item.id}, '${catKey}')">+ أضف</button>
+                        <button class="add-btn" onclick="addToCart(${item.id}, '${catKey}')">${currentLang === 'ar' ? '+ أضف' : '+ Add'}</button>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -144,7 +192,7 @@ function buildProductRow(item, catKey) {
             <div class="product-row-right">
                 <span class="price-tag">${item.price} AED</span>
                 <input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">
-                <button class="add-btn" onclick="addToCart(${item.id}, '${catKey}')">+ أضف</button>
+                <button class="add-btn" onclick="addToCart(${item.id}, '${catKey}')">${currentLang === 'ar' ? '+ أضف' : '+ Add'}</button>
             </div>
         </div>
     `;
@@ -179,7 +227,7 @@ function addToCart(itemId, catKey) {
     const btn = document.querySelector(`button.add-btn[onclick="addToCart(${itemId}, '${catKey}')"]`);
     if (btn) {
         const orig = btn.textContent;
-        btn.textContent = '✓ تمت الإضافة';
+        btn.textContent = currentLang === 'ar' ? '✓ تمت الإضافة' : '✓ Added';
         btn.style.backgroundColor = '#4CAF50';
         setTimeout(() => {
             btn.textContent = orig;
@@ -203,7 +251,7 @@ function renderCart() {
     const totalEl = document.getElementById('total');
 
     if (cart.length === 0) {
-        container.innerHTML = '<div class="empty-cart">السلة فارغة 🛒</div>';
+        container.innerHTML = `<div class="empty-cart">${currentLang === 'ar' ? 'السلة فارغة' : 'Cart is empty'} 🛒</div>`;
         totalEl.textContent = '0';
         return;
     }
@@ -218,7 +266,7 @@ function renderCart() {
             <div class="cart-item">
                 <div class="cart-item-info">
                     <div class="cart-item-name">${item.name}</div>
-                    <div class="cart-item-qty">الكمية: ${item.quantity} × ${item.price} AED</div>
+                    <div class="cart-item-qty">${currentLang === 'ar' ? 'الكمية' : 'Qty'}: ${item.quantity} × ${item.price} AED</div>
                 </div>
                 <span class="cart-item-price">${itemTotal} AED</span>
                 <button class="remove-btn" onclick="removeFromCart(${idx})" title="حذف">✕</button>
@@ -287,7 +335,10 @@ function closeCartModal() {
 }
 
 function goCheckout() {
-    if (cart.length === 0) { alert('السلة فارغة!'); return; }
+    if (cart.length === 0) { 
+        alert(currentLang === 'ar' ? 'السلة فارغة!' : 'Cart is empty!'); 
+        return; 
+    }
     closeCartModal();
     document.getElementById('checkout-modal').classList.add('active');
 }
@@ -322,7 +373,7 @@ function submitOrder(event) {
     const payment = document.getElementById('cust-payment').value;
 
     if (!name || !phone || !address || !payment) {
-        alert('يرجى ملء جميع الحقول');
+        alert(currentLang === 'ar' ? 'يرجى ملء جميع الحقول' : 'Please fill all fields');
         return;
     }
 
@@ -339,20 +390,45 @@ function submitOrder(event) {
         `;
     });
 
+    const labels = {
+        ar: {
+            success: '✓ تم تأكيد الطلب بنجاح!',
+            orderId: 'رقم الطلب',
+            name: 'الاسم',
+            phone: 'الهاتف',
+            address: 'العنوان',
+            payment: 'الدفع',
+            total: 'الإجمالي',
+            status: '⏳ قيد المعالجة – سيتم التواصل معك قريباً'
+        },
+        en: {
+            success: '✓ Order confirmed successfully!',
+            orderId: 'Order ID',
+            name: 'Name',
+            phone: 'Phone',
+            address: 'Address',
+            payment: 'Payment',
+            total: 'Total',
+            status: '⏳ Processing - We will contact you soon'
+        }
+    };
+
+    const l = labels[currentLang];
+
     const detailsHTML = `
-        <div class="order-success">✓ تم تأكيد الطلب بنجاح!</div>
-        <div class="order-row"><span>رقم الطلب</span><strong>${orderId}</strong></div>
-        <div class="order-row"><span>الاسم</span><span>${name}</span></div>
-        <div class="order-row"><span>الهاتف</span><span>${phone}</span></div>
-        <div class="order-row"><span>العنوان</span><span>${address}</span></div>
-        <div class="order-row"><span>الدفع</span><span>${payment}</span></div>
+        <div class="order-success">${l.success}</div>
+        <div class="order-row"><span>${l.orderId}</span><strong>${orderId}</strong></div>
+        <div class="order-row"><span>${l.name}</span><span>${name}</span></div>
+        <div class="order-row"><span>${l.phone}</span><span>${phone}</span></div>
+        <div class="order-row"><span>${l.address}</span><span>${address}</span></div>
+        <div class="order-row"><span>${l.payment}</span><span>${payment}</span></div>
         <hr style="margin:0.75rem 0;border-color:#f0e8e0">
         ${itemsHTML}
         <div class="order-row order-total">
-            <span>الإجمالي</span>
+            <span>${l.total}</span>
             <span>${total} AED</span>
         </div>
-        <div class="order-status">⏳ قيد المعالجة – سيتم التواصل معك قريباً</div>
+        <div class="order-status">${l.status}</div>
     `;
 
     document.getElementById('order-content').innerHTML = detailsHTML;
