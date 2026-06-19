@@ -9,14 +9,18 @@
 <body>
     <header>
         <div class="header-content">
+            <div class="lang-switcher">
+                <button class="lang-btn active" data-lang="ar">AR</button>
+                <button class="lang-btn" data-lang="en">EN</button>
+            </div>
             <div class="logo-section">
                 <img src="images/Coz.jpg" alt="شعار COZ" class="logo" onerror="this.style.display='none'">
             </div>
             <nav class="nav-menu">
-                <button class="nav-btn" onclick="goHome()">الرئيسية</button>
-                <button class="nav-btn order-btn" onclick="goProducts()">بدء الطلب</button>
-                <button class="nav-btn menu-btn" onclick="showMenuModal()">Menu</button>
-                <button class="nav-btn cart-btn" onclick="showCartModal()">🛒 السلة <span id="cart-count" class="cart-badge">0</span></button>
+                <button class="nav-btn" onclick="goHome()" data-ar="الرئيسية" data-en="Home">الرئيسية</button>
+                <button class="nav-btn order-btn" onclick="goProducts()" data-ar="بدء الطلب" data-en="Order">بدء الطلب</button>
+                <button class="nav-btn" onclick="showMenuModal()" data-ar="القائمة" data-en="Menu">القائمة</button>
+                <button class="nav-btn" onclick="showCartModal()">🛒 <span id="cart-count" class="cart-badge">0</span></button>
             </nav>
         </div>
     </header>
@@ -25,16 +29,16 @@
         <!-- الصفحة الرئيسية -->
         <section id="home" class="section active">
             <div class="hero">
-                <h2>أهلاً بك في COZ ☕</h2>
-                <p>قهوتك المفضلة بانتظارك</p>
-                <button class="btn" onclick="goProducts()">بدء الطلب</button>
+                <h2 data-ar="أهلاً بك في COZ ☕" data-en="Welcome to COZ ☕">أهلاً بك في COZ ☕</h2>
+                <p data-ar="قهوتك المفضلة بانتظارك" data-en="Your favorite coffee is waiting">قهوتك المفضلة بانتظارك</p>
+                <button class="btn" onclick="goProducts()" data-ar="بدء الطلب" data-en="Start Order">بدء الطلب</button>
             </div>
         </section>
 
         <!-- صفحة المنتجات -->
         <section id="products" class="section">
             <div class="container">
-                <h2>قائمة الطلب</h2>
+                <h2 data-ar="قائمة الطلب" data-en="Order List">قائمة الطلب</h2>
                 <div id="products-list"></div>
             </div>
         </section>
@@ -52,14 +56,14 @@
     <div id="cart-modal" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeCartModal()">&times;</button>
-            <h2>🛒 السلة</h2>
+            <h2 data-ar="🛒" data-en="🛒">🛒</h2>
             <div id="cart-items"></div>
             <div class="cart-footer">
                 <div class="total-row">
-                    <span>الإجمالي</span>
+                    <span data-ar="الإجمالي" data-en="Total">الإجمالي</span>
                     <span><strong id="total">0</strong> AED</span>
                 </div>
-                <button class="btn full-btn" onclick="goCheckout()">الدفع →</button>
+                <button class="btn full-btn" onclick="goCheckout()" data-ar="الدفع →" data-en="Checkout →">الدفع →</button>
             </div>
         </div>
     </div>
@@ -68,17 +72,17 @@
     <div id="checkout-modal" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeCheckoutModal()">&times;</button>
-            <h2>إتمام الطلب</h2>
+            <h2 data-ar="إتمام الطلب" data-en="Complete Order">إتمام الطلب</h2>
             <form id="checkout-form" onsubmit="submitOrder(event)">
-                <input type="text" id="cust-name" placeholder="الاسم الكامل" required>
-                <input type="tel" id="cust-phone" placeholder="رقم الهاتف" required>
-                <input type="text" id="cust-address" placeholder="العنوان" required>
+                <input type="text" id="cust-name" placeholder="الاسم الكامل" data-ar-placeholder="الاسم الكامل" data-en-placeholder="Full Name" required>
+                <input type="tel" id="cust-phone" placeholder="رقم الهاتف" data-ar-placeholder="رقم الهاتف" data-en-placeholder="Phone Number" required>
+                <input type="text" id="cust-address" placeholder="العنوان" data-ar-placeholder="العنوان" data-en-placeholder="Address" required>
                 <select id="cust-payment" required>
                     <option value="">اختر طريقة الدفع</option>
                     <option value="عند الاستلام">عند الاستلام</option>
                     <option value="Zain Pay">Zain Pay</option>
                 </select>
-                <button type="submit" class="btn full-btn">تأكيد الطلب ✓</button>
+                <button type="submit" class="btn full-btn" data-ar="تأكيد الطلب ✓" data-en="Confirm Order ✓">تأكيد الطلب ✓</button>
             </form>
         </div>
     </div>
