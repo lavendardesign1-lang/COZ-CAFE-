@@ -33,39 +33,44 @@ function changeLanguage(lang) {
 // ===== بيانات المنتجات =====
 const productsAr = {
     V60: {
-        label: '☕ V60',
+        labelAr: '☕ V60',
+        labelEn: '☕ V60',
         mainImage: 'images/V60.PNG',
         items: [
-            { id: 1, name: 'Lollipop',      image: 'images/Lollipop .PNG',   price: 26 },
-            { id: 2, name: 'Snickers',       image: 'images/Snickers .PNG',   price: 26 },
-            { id: 3, name: 'Tobacco',        image: 'images/Tobacco .PNG',    price: 26 },
-            { id: 4, name: 'Crème brûlée',   image: 'images/Creme.PNG', price: 26 }
+            { id: 1, nameAr: 'لولي بوب 🍒', nameEn: 'Lollipop 🍒', image: 'images/Lollipop .PNG', price: 26 },
+            { id: 2, nameAr: 'سنيكرز', nameEn: 'Snickers', image: 'images/Snickers .PNG', price: 26 },
+            { id: 3, nameAr: 'توباكو', nameEn: 'Tobacco', image: 'images/Tobacco .PNG', price: 26 },
+            { id: 4, nameAr: 'كريم بورليه', nameEn: 'Crème brûlée', image: 'images/Creme.PNG', price: 26 }
         ]
     },
     ESPRESSO: {
-        label: '☕ ESPRESSO',
+        labelAr: '☕ ESPRESSO',
+        labelEn: '☕ ESPRESSO',
         items: [
-            { id: 5, name: 'Ice Americano',      image: '',             price: 17 },
-            { id: 6, name: 'Foame Espresso',     image: 'images/Fome.PNG', price: 25 },
-            { id: 7, name: 'Dark Foame Espresso', image: '',            price: 27 }
+            { id: 5, nameAr: 'امريكانو مثلج', nameEn: 'Ice Americano', image: '', price: 17 },
+            { id: 6, nameAr: 'اسبريسو بالرغوة', nameEn: 'Foame Espresso', image: 'images/Fome.PNG', price: 25 },
+            { id: 7, nameAr: 'اسبريسو بالرغوة (شوكولاته غامقة)', nameEn: 'Dark Foame Espresso', image: '', price: 27 }
         ]
     },
     MATCHA: {
-        label: '🍵 MATCHA',
+        labelAr: '🍵 ماتشا',
+        labelEn: '🍵 MATCHA',
         items: [
-            { id: 8, name: 'Foame Matcha', image: 'images/Matcha.PNG', price: 29, coconutOption: true }
+            { id: 8, nameAr: 'ماتشا برغوة', nameEn: 'Foame Matcha', image: 'images/Matcha.PNG', price: 29, coconutOption: true }
         ]
     },
     HIBISCUS: {
-        label: '🌺 HIBISCUS',
+        labelAr: '🌺 كركديه',
+        labelEn: '🌺 HIBISCUS',
         items: [
-            { id: 9, name: 'Hibiscus', image: '', price: 13 }
+            { id: 9, nameAr: 'كركديه', nameEn: 'Hibiscus', image: '', price: 13 }
         ]
     },
-    DESERT: {
-        label: '🍫 DESERT',
+    DESSERTS: {
+        labelAr: '🍫 حلويات',
+        labelEn: '🍫 Desserts',
         items: [
-            { id: 10, name: 'RockyRoad – 2 pieces', image: 'images/Rocky road .jpg', price: 12 }
+            { id: 10, nameAr: 'روكي رود – 2 قطعة', nameEn: 'RockyRoad – 2 pieces', image: 'images/Rocky road .jpg', price: 12 }
         ]
     }
 };
@@ -105,7 +110,7 @@ function renderProducts() {
 
         const title = document.createElement('div');
         title.className = 'category-title';
-        title.textContent = cat.label;
+        title.textContent = currentLang === 'ar' ? cat.labelAr : cat.labelEn;
         section.appendChild(title);
 
         if (catKey === 'V60') {
@@ -126,11 +131,12 @@ function renderProducts() {
             cat.items.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'v60-flavor-card';
+                const itemName = currentLang === 'ar' ? item.nameAr : item.nameEn;
                 card.innerHTML = `
-                    <img src="${item.image}" alt="${item.name}" class="v60-flavor-img"
+                    <img src="${item.image}" alt="${itemName}" class="v60-flavor-img"
                          onerror="this.style.background='linear-gradient(135deg,#d4a46a,#C19A6B)';this.style.display='block';">
                     <div class="v60-flavor-info">
-                        <span class="v60-flavor-name">${item.name}</span>
+                        <span class="v60-flavor-name">${itemName}</span>
                         <span class="v60-flavor-price">${item.price} AED</span>
                     </div>
                     <div class="v60-flavor-actions">
@@ -176,8 +182,9 @@ function renderProducts() {
 }
 
 function buildProductRow(item, catKey) {
+    const itemName = currentLang === 'ar' ? item.nameAr : item.nameEn;
     const imgHTML = item.image
-        ? `<img src="${item.image}" alt="${item.name}" class="product-thumb"
+        ? `<img src="${item.image}" alt="${itemName}" class="product-thumb"
                onerror="this.style.display='none'">`
         : '';
 
@@ -186,7 +193,7 @@ function buildProductRow(item, catKey) {
             <div class="product-row-left">
                 ${imgHTML}
                 <div>
-                    <div class="product-row-name">${item.name}</div>
+                    <div class="product-row-name">${itemName}</div>
                 </div>
             </div>
             <div class="product-row-right">
@@ -203,7 +210,7 @@ function addToCart(itemId, catKey) {
     const item = products[catKey].items.find(i => i.id === itemId);
     const qty = parseInt(document.getElementById(`qty-${itemId}`).value) || 1;
     let finalPrice = item.price;
-    let itemName = item.name;
+    let itemName = currentLang === 'ar' ? item.nameAr : item.nameEn;
 
     // Coconut milk add-on
     const coconutCheckbox = document.getElementById(`coconut-${itemId}`);
