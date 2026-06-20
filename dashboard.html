@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم – COZ CAFÉ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary: #C19A6B;
+            --primary-dark: #9a7a50;
+            --bg: #1a1208;
+            --surface: #2a1e0f;
+            --surface2: #3a2c1a;
+            --text: #f5e6d0;
+            --text-muted: #b09070;
+            --border: #4a3820;
+            --pending: #e8a020;
+            --completed: #4caf50;
+            --danger: #e53935;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            direction: rtl;
+        }
+
+        /* ===== PIN SCREEN ===== */
+        #pin-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at center, #2a1e0f 0%, #1a1208 70%);
+        }
+
+        .pin-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            max-width: 360px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .pin-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            border: 3px solid var(--primary);
+        }
+
+        .pin-box h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .pin-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .pin-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .pin-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pin-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: background 0.2s;
+        }
+
+        .pin-dot.filled {
+            background: var(--primary);
+        }
+
+        .pin-keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+            max-width: 240px;
+            margin: 0 auto 1.2rem;
+        }
+
+        .key-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            padding: 0.9rem 0;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .key-btn:hover { background: #4a3820; }
+        .key-btn:active { transform: scale(0.94); background: var(--primary-dark); }
+        .key-btn.delete { font-size: 1rem; color: var(--text-muted); }
+        .key-btn.zero { grid-column: 2; }
+
+        .pin-error {
+            color: var(--danger);
+            font-size: 0.85rem;
+            min-height: 1.2rem;
+            margin-top: 0.3rem;
+        }
+
+        /* ===== DASHBOARD ===== */
+        #dashboard { display: none; }
+
+        .dash-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .dash-header h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            padding: 0.45rem 0.9rem;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-danger-outline {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .btn-danger-outline:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .dash-body {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Stats */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            text-align: center;
+        }
+
+        .stat-card .stat-val {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stat-card .stat-lbl {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+        }
+
+        /* Filters */
+        .filters-row {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-row input,
+        .filters-row select {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.88rem;
+            padding: 0.5rem 0.8rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .filters-row input:focus,
+        .filters-row select:focus {
+            border-color: var(--primary);
+        }
+
+        .filters-row input[type="text"] { flex: 1; min-width: 160px; }
+        .filters-row input[type="date"] { min-width: 140px; }
+
+        .filters-row select option { background: var(--surface); }
+
+        .btn-clear {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .btn-clear:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Orders */
+        .orders-count {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .order-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .order-card:hover { border-color: var(--primary); }
+
+        .order-card.completed-card { opacity: 0.7; }
+
+        .order-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .order-id {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .order-date {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .status-pending { background: rgba(232,160,32,0.15); color: var(--pending); border: 1px solid rgba(232,160,32,0.3); }
+        .status-completed { background: rgba(76,175,80,0.15); color: var(--completed); border: 1px solid rgba(76,175,80,0.3); }
+
+        .order-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item { font-size: 0.88rem; }
+        .info-item .info-lbl { color: var(--text-muted); font-size: 0.78rem; }
+        .info-item .info-val { color: var(--text); margin-top: 0.1rem; }
+
+        .order-items-section {
+            border-top: 1px solid var(--border);
+            padding-top: 0.85rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .order-items-title {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .order-item-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.86rem;
+            padding: 0.2rem 0;
+            color: var(--text);
+        }
+
+        .order-total-row {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--primary);
+            border-top: 1px solid var(--border);
+            padding-top: 0.6rem;
+            margin-top: 0.4rem;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 0.6rem;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .btn-complete {
+            background: rgba(76,175,80,0.15);
+            border: 1px solid rgba(76,175,80,0.4);
+            color: var(--completed);
+            border-radius: 8px;
+            padding: 0.45rem 1rem;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.84rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-complete:hover { background: var(--completed); color: white; }
+
+        .btn-delete {
+            background: rgba(229,57,53,0.12);
+            border: 1px solid rgba(229,57,53,0.35);
+            color: var(--danger);
+            border-radius: 8px;
+            padding: 0.45rem 1rem;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.84rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        .btn-whatsapp {
+            background: rgba(37,211,102,0.12);
+            border: 1px solid rgba(37,211,102,0.35);
+            color: #25d366;
+            border-radius: 8px;
+            padding: 0.45rem 1rem;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.84rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-whatsapp:hover { background: #25d366; color: white; }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state .empty-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+        .empty-state p { font-size: 1rem; }
+
+        /* Lang toggle */
+        .lang-toggle {
+            display: flex;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .lang-toggle button {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.8rem;
+            padding: 0.35rem 0.65rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-toggle button.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .stats-row { grid-template-columns: repeat(3, 1fr); }
+            .dash-header h1 span { display: none; }
+            .order-info { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== شاشة إدخال الـ PIN ===== -->
+<div id="pin-screen">
+    <div class="pin-box">
+        <img src="images/Coz.jpg" alt="COZ" class="pin-logo" onerror="this.style.display='none'">
+        <h1>COZ CAFÉ</h1>
+        <p class="pin-subtitle" id="pin-subtitle-ar">لوحة تحكم التاجر</p>
+        <p class="pin-label" id="pin-label-ar">أدخل رقم PIN للدخول</p>
+        <div class="pin-dots" id="pin-dots">
+            <div class="pin-dot" id="d0"></div>
+            <div class="pin-dot" id="d1"></div>
+            <div class="pin-dot" id="d2"></div>
+            <div class="pin-dot" id="d3"></div>
+        </div>
+        <div class="pin-keypad">
+            <button class="key-btn" onclick="pinKey('1')">1</button>
+            <button class="key-btn" onclick="pinKey('2')">2</button>
+            <button class="key-btn" onclick="pinKey('3')">3</button>
+            <button class="key-btn" onclick="pinKey('4')">4</button>
+            <button class="key-btn" onclick="pinKey('5')">5</button>
+            <button class="key-btn" onclick="pinKey('6')">6</button>
+            <button class="key-btn" onclick="pinKey('7')">7</button>
+            <button class="key-btn" onclick="pinKey('8')">8</button>
+            <button class="key-btn" onclick="pinKey('9')">9</button>
+            <button class="key-btn delete" onclick="pinDelete()">&#9003;</button>
+            <button class="key-btn zero" onclick="pinKey('0')">0</button>
+            <button class="key-btn" onclick="pinClear()" style="font-size:0.8rem;color:var(--text-muted)">مسح</button>
+        </div>
+        <div class="pin-error" id="pin-error"></div>
+    </div>
+</div>
+
+<!-- ===== لوحة التحكم ===== -->
+<div id="dashboard">
+    <header class="dash-header">
+        <h1>&#9749; <span>COZ CAFÉ &ndash; </span><span id="hdr-title">لوحة التحكم</span></h1>
+        <div class="header-actions">
+            <div class="lang-toggle">
+                <button id="lang-ar" class="active" onclick="setLang('ar')">AR</button>
+                <button id="lang-en" onclick="setLang('en')">EN</button>
+            </div>
+            <button class="btn-outline btn-danger-outline" onclick="logout()" id="btn-logout">خروج</button>
+        </div>
+    </header>
+
+    <div class="dash-body">
+        <!-- إحصائيات -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <span class="stat-val" id="stat-total">0</span>
+                <div class="stat-lbl" id="lbl-total">إجمالي الطلبات</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-val" style="color:var(--pending)" id="stat-pending">0</span>
+                <div class="stat-lbl" id="lbl-pending">قيد الانتظار</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-val" style="color:var(--completed)" id="stat-completed">0</span>
+                <div class="stat-lbl" id="lbl-completed">مكتملة</div>
+            </div>
+        </div>
+
+        <!-- فلاتر البحث -->
+        <div class="filters-row">
+            <input type="text" id="search-input" placeholder="بحث بالاسم أو الهاتف أو رقم الطلب..." oninput="applyFilters()">
+            <select id="status-filter" onchange="applyFilters()">
+                <option value="" id="opt-all">الكل</option>
+                <option value="pending" id="opt-pending">قيد الانتظار</option>
+                <option value="completed" id="opt-completed">مكتملة</option>
+            </select>
+            <input type="date" id="date-filter" onchange="applyFilters()">
+            <button class="btn-clear" onclick="clearFilters()" id="btn-clear">مسح الفلاتر</button>
+        </div>
+
+        <!-- عدد النتائج -->
+        <div class="orders-count" id="orders-count"></div>
+
+        <!-- قائمة الطلبات -->
+        <div id="orders-container"></div>
+    </div>
+</div>
+
+<script>
+// ===== إعدادات =====
+var CORRECT_PIN = '1234';
+var currentLang = 'ar';
+
+// ===== الترجمات =====
+var translations = {
+    ar: {
+        hdrTitle: 'لوحة التحكم',
+        logout: 'خروج',
+        totalOrders: 'إجمالي الطلبات',
+        pending: 'قيد الانتظار',
+        completed: 'مكتملة',
+        searchPlaceholder: 'بحث بالاسم أو الهاتف أو رقم الطلب...',
+        all: 'الكل',
+        pendingOpt: 'قيد الانتظار',
+        completedOpt: 'مكتملة',
+        dateFilter: 'تاريخ',
+        clearFilters: 'مسح الفلاتر',
+        ordersCount: function(n) { return 'عرض ' + n + ' طلب'; },
+        emptyTitle: 'لا توجد طلبات',
+        emptyMsg: 'لم يتم استلام أي طلبات بعد',
+        noMatch: 'لا توجد نتائج تطابق البحث',
+        orderNum: 'رقم الطلب',
+        customer: 'بيانات العميل',
+        name: 'الاسم',
+        phone: 'الهاتف',
+        address: 'العنوان',
+        products: 'المنتجات',
+        qty: 'الكمية',
+        total: 'الإجمالي',
+        markComplete: '✓ مكتمل',
+        alreadyComplete: 'مكتمل ✓',
+        deleteOrder: 'حذف',
+        confirmDelete: 'هل تريد حذف هذا الطلب؟',
+        whatsapp: 'واتساب',
+        statusPending: 'قيد الانتظار',
+        statusCompleted: 'مكتمل',
+        pinLabel: 'أدخل رقم PIN للدخول',
+        pinSubtitle: 'لوحة تحكم التاجر',
+        wrongPin: 'رقم PIN غير صحيح، حاول مجدداً'
+    },
+    en: {
+        hdrTitle: 'Dashboard',
+        logout: 'Logout',
+        totalOrders: 'Total Orders',
+        pending: 'Pending',
+        completed: 'Completed',
+        searchPlaceholder: 'Search by name, phone or order ID...',
+        all: 'All',
+        pendingOpt: 'Pending',
+        completedOpt: 'Completed',
+        clearFilters: 'Clear Filters',
+        ordersCount: function(n) { return 'Showing ' + n + ' order(s)'; },
+        emptyTitle: 'No Orders Yet',
+        emptyMsg: 'No orders have been received yet',
+        noMatch: 'No orders match your search',
+        orderNum: 'Order ID',
+        customer: 'Customer Info',
+        name: 'Name',
+        phone: 'Phone',
+        address: 'Address',
+        products: 'Products',
+        qty: 'Qty',
+        total: 'Total',
+        markComplete: '✓ Complete',
+        alreadyComplete: 'Completed ✓',
+        deleteOrder: 'Delete',
+        confirmDelete: 'Delete this order?',
+        whatsapp: 'WhatsApp',
+        statusPending: 'Pending',
+        statusCompleted: 'Completed',
+        pinLabel: 'Enter PIN to access',
+        pinSubtitle: 'Merchant Dashboard',
+        wrongPin: 'Incorrect PIN, please try again'
+    }
+};
+
+function t(key) {
+    return translations[currentLang][key] || translations['ar'][key] || key;
+}
+
+// ===== إدارة اللغة =====
+function setLang(lang) {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.getElementById('lang-ar').classList.toggle('active', lang === 'ar');
+    document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+    applyTranslations();
+    renderOrders(getFilteredOrders());
+}
+
+function applyTranslations() {
+    document.getElementById('hdr-title').textContent = t('hdrTitle');
+    document.getElementById('btn-logout').textContent = t('logout');
+    document.getElementById('lbl-total').textContent = t('totalOrders');
+    document.getElementById('lbl-pending').textContent = t('pending');
+    document.getElementById('lbl-completed').textContent = t('completed');
+    document.getElementById('search-input').placeholder = t('searchPlaceholder');
+    document.getElementById('opt-all').textContent = t('all');
+    document.getElementById('opt-pending').textContent = t('pendingOpt');
+    document.getElementById('opt-completed').textContent = t('completedOpt');
+    document.getElementById('btn-clear').textContent = t('clearFilters');
+}
+
+// ===== PIN Management =====
+var pinBuffer = '';
+
+function pinKey(digit) {
+    if (pinBuffer.length >= 4) return;
+    pinBuffer += digit;
+    updatePinDots();
+    if (pinBuffer.length === 4) {
+        setTimeout(checkPin, 120);
+    }
+}
+
+function pinDelete() {
+    pinBuffer = pinBuffer.slice(0, -1);
+    updatePinDots();
+    document.getElementById('pin-error').textContent = '';
+}
+
+function pinClear() {
+    pinBuffer = '';
+    updatePinDots();
+    document.getElementById('pin-error').textContent = '';
+}
+
+function updatePinDots() {
+    for (var i = 0; i < 4; i++) {
+        document.getElementById('d' + i).classList.toggle('filled', i < pinBuffer.length);
+    }
+}
+
+function checkPin() {
+    if (pinBuffer === CORRECT_PIN) {
+        document.getElementById('pin-screen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        loadDashboard();
+    } else {
+        document.getElementById('pin-error').textContent = t('wrongPin');
+        pinBuffer = '';
+        updatePinDots();
+    }
+}
+
+function logout() {
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('pin-screen').style.display = 'flex';
+    pinClear();
+}
+
+// ===== تحميل البيانات =====
+var allOrders = [];
+
+function loadDashboard() {
+    try {
+        allOrders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+    } catch (e) {
+        allOrders = [];
+    }
+    updateStats();
+    applyTranslations();
+    applyFilters();
+}
+
+function updateStats() {
+    var pending = allOrders.filter(function(o) { return o.status !== 'completed'; }).length;
+    var completed = allOrders.filter(function(o) { return o.status === 'completed'; }).length;
+    document.getElementById('stat-total').textContent = allOrders.length;
+    document.getElementById('stat-pending').textContent = pending;
+    document.getElementById('stat-completed').textContent = completed;
+}
+
+// ===== فلترة =====
+function getFilteredOrders() {
+    var search = document.getElementById('search-input').value.trim().toLowerCase();
+    var status = document.getElementById('status-filter').value;
+    var date = document.getElementById('date-filter').value;
+
+    return allOrders.filter(function(o) {
+        if (search) {
+            var haystack = (o.name + ' ' + o.phone + ' ' + o.orderId).toLowerCase();
+            if (haystack.indexOf(search) === -1) return false;
+        }
+        if (status && o.status !== status) return false;
+        if (date) {
+            var orderDate = o.timestamp ? o.timestamp.slice(0, 10) : '';
+            if (orderDate !== date) return false;
+        }
+        return true;
+    });
+}
+
+function applyFilters() {
+    var filtered = getFilteredOrders();
+    document.getElementById('orders-count').textContent = t('ordersCount')(filtered.length);
+    renderOrders(filtered);
+}
+
+function clearFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('status-filter').value = '';
+    document.getElementById('date-filter').value = '';
+    applyFilters();
+}
+
+// ===== رسم الطلبات =====
+function renderOrders(orders) {
+    var container = document.getElementById('orders-container');
+
+    if (allOrders.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128436;</div><p>' + t('emptyMsg') + '</p></div>';
+        return;
+    }
+
+    if (orders.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128269;</div><p>' + t('noMatch') + '</p></div>';
+        return;
+    }
+
+    var html = '';
+    orders.forEach(function(order) {
+        var isCompleted = order.status === 'completed';
+        var statusClass = isCompleted ? 'status-completed' : 'status-pending';
+        var statusText = isCompleted ? t('statusCompleted') : t('statusPending');
+        var cardClass = isCompleted ? 'order-card completed-card' : 'order-card';
+
+        var dateStr = '';
+        if (order.timestamp) {
+            try {
+                var d = new Date(order.timestamp);
+                dateStr = d.toLocaleDateString(currentLang === 'ar' ? 'ar-AE' : 'en-GB') +
+                          ' ' + d.toLocaleTimeString(currentLang === 'ar' ? 'ar-AE' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+            } catch(e) {
+                dateStr = '';
+            }
+        }
+
+        var itemsHtml = '';
+        if (order.items && order.items.length) {
+            order.items.forEach(function(item) {
+                var qty = Number(item.quantity) || 0;
+                var price = Number(item.price) || 0;
+                var lineTotal = qty * price;
+                itemsHtml += '<div class="order-item-row">' +
+                    '<span>' + escapeHtml(item.name) + ' &times; ' + qty + '</span>' +
+                    '<span>' + lineTotal + ' AED</span>' +
+                '</div>';
+            });
+        }
+
+        var whatsappMsg = buildWhatsAppMessage(order);
+        var whatsappUrl = 'https://wa.me/971561888234?text=' + encodeURIComponent(whatsappMsg);
+        var safeId = escapeHtml(order.orderId);
+        var safeTotal = Number(order.total) || 0;
+
+        html += '<div class="' + cardClass + '">' +
+            '<div class="order-top">' +
+                '<div>' +
+                    '<div class="order-id">' + t('orderNum') + ': ' + safeId + '</div>' +
+                    '<div class="order-date">' + escapeHtml(dateStr) + '</div>' +
+                '</div>' +
+                '<span class="status-badge ' + statusClass + '">' + statusText + '</span>' +
+            '</div>' +
+            '<div class="order-info">' +
+                '<div class="info-item">' +
+                    '<div class="info-lbl">' + t('name') + '</div>' +
+                    '<div class="info-val">' + escapeHtml(order.name) + '</div>' +
+                '</div>' +
+                '<div class="info-item">' +
+                    '<div class="info-lbl">' + t('phone') + '</div>' +
+                    '<div class="info-val" dir="ltr" style="text-align:right">' + escapeHtml(order.phone) + '</div>' +
+                '</div>' +
+                '<div class="info-item">' +
+                    '<div class="info-lbl">' + t('address') + '</div>' +
+                    '<div class="info-val">' + escapeHtml(order.address) + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="order-items-section">' +
+                '<div class="order-items-title">' + t('products') + '</div>' +
+                itemsHtml +
+                '<div class="order-total-row">' +
+                    '<span>' + t('total') + '</span>' +
+                    '<span>' + safeTotal + ' AED</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="order-actions">' +
+                '<a href="' + escapeHtml(whatsappUrl) + '" target="_blank" class="btn-whatsapp" rel="noopener noreferrer">&#128172; ' + t('whatsapp') + '</a>' +
+                (isCompleted
+                    ? '<button class="btn-complete" disabled style="opacity:.5;cursor:default">' + t('alreadyComplete') + '</button>'
+                    : '<button class="btn-complete action-btn" data-action="complete" data-order-id="' + safeId + '">' + t('markComplete') + '</button>') +
+                '<button class="btn-delete action-btn" data-action="delete" data-order-id="' + safeId + '">' + t('deleteOrder') + '</button>' +
+            '</div>' +
+        '</div>';
+    });
+
+    container.innerHTML = html;
+}
+
+// ===== تفويض أحداث الأزرار (بدلاً من onclick مباشر في HTML) =====
+document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.action-btn');
+    if (!btn) return;
+    var orderId = btn.getAttribute('data-order-id');
+    var action = btn.getAttribute('data-action');
+    if (!orderId) return;
+    if (action === 'complete') markComplete(orderId);
+    if (action === 'delete') deleteOrder(orderId);
+});
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function buildWhatsAppMessage(order) {
+    var itemsList = (order.items || [])
+        .map(function(i) { return '- ' + i.name + ': ' + i.quantity + ' x ' + i.price + ' AED = ' + (i.quantity * i.price) + ' AED'; })
+        .join('\n');
+    var dateStr = order.timestamp ? new Date(order.timestamp).toLocaleString('ar-AE') : '';
+    var lines = [
+        'طلب من COZ CAFE',
+        '----------------',
+        'رقم الطلب: ' + order.orderId,
+        'الاسم: ' + order.name,
+        'الهاتف: ' + order.phone,
+        'العنوان: ' + order.address,
+        '----------------',
+        'المنتجات:',
+        itemsList,
+        '----------------',
+        'الاجمالي: ' + order.total + ' AED',
+        'الوقت: ' + dateStr
+    ];
+    return lines.join('\n');
+}
+
+// ===== إجراءات الطلب =====
+function markComplete(orderId) {
+    var idx = allOrders.findIndex(function(o) { return o.orderId === orderId; });
+    if (idx === -1) return;
+    allOrders[idx].status = 'completed';
+    saveOrders();
+    updateStats();
+    applyFilters();
+}
+
+function deleteOrder(orderId) {
+    if (!confirm(t('confirmDelete'))) return;
+    allOrders = allOrders.filter(function(o) { return o.orderId !== orderId; });
+    saveOrders();
+    updateStats();
+    applyFilters();
+}
+
+function saveOrders() {
+    try {
+        localStorage.setItem('cozOrders', JSON.stringify(allOrders));
+    } catch(e) {
+        console.error('Error saving orders:', e);
+    }
+}
+
+// Array.findIndex polyfill for older browsers
+if (!Array.prototype.findIndex) {
+    Array.prototype.findIndex = function(predicate) {
+        for (var i = 0; i < this.length; i++) {
+            if (predicate(this[i], i, this)) return i;
+        }
+        return -1;
+    };
+}
+</script>
+</body>
+</html>

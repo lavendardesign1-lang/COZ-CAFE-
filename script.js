@@ -391,25 +391,69 @@ function submitOrder(event) {
     const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
     const orderId = 'ORD-' + Date.now();
 
-    // حفظ بيانات الطلب
     const orderData = {
         orderId: orderId,
         name: name,
         phone: phone,
         address: address,
-        items: cart,
+        items: cart.map(i => ({ ...i })),
         total: total,
+        status: 'pending',
         timestamp: new Date().toISOString()
     };
 
-    // حفظ في localStorage للمراجعة
+    // حفظ الطلب في السجل
     localStorage.setItem('lastOrder', JSON.stringify(orderData));
+    saveOrderToHistory(orderData);
 
-    // إغلاق نموذج الدفع
+    // إرسال تفاصيل الطلب إلى واتساب التاجر
+    sendOrderToWhatsApp(orderData);
+
+    // إغلاق النافذة وتصفير السلة
     closeCheckoutModal();
+    document.getElementById('checkout-form').reset();
+    cart = [];
+    saveCart();
+    updateCartCount();
 
-    // الانتقال إلى رابط الدفع على زينه مباشرة
+    // الانتقال إلى بوابة الدفع
     redirectToZiinaPayment(orderId, total, name, phone);
+}
+
+// ===== حفظ الطلب في سجل الطلبات =====
+function saveOrderToHistory(orderData) {
+    try {
+        const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+        orders.unshift(orderData);
+        localStorage.setItem('cozOrders', JSON.stringify(orders));
+    } catch (e) {
+        console.error('Error saving order:', e);
+    }
+}
+
+// ===== إرسال الطلب إلى واتساب التاجر =====
+function sendOrderToWhatsApp(order) {
+    const itemsList = order.items
+        .map(i => '- ' + i.name + ': ' + i.quantity + ' x ' + i.price + ' AED = ' + (i.quantity * i.price) + ' AED')
+        .join('\n');
+    const dateStr = new Date(order.timestamp).toLocaleString('ar-AE');
+    const lines = [
+        'طلب جديد من COZ CAFE',
+        '────────────────',
+        'رقم الطلب: ' + order.orderId,
+        'الاسم: ' + order.name,
+        'الهاتف: ' + order.phone,
+        'العنوان: ' + order.address,
+        '────────────────',
+        'المنتجات:',
+        itemsList,
+        '────────────────',
+        'الاجمالي: ' + order.total + ' AED',
+        'الوقت: ' + dateStr
+    ];
+    const message = lines.join('\n');
+    const whatsappUrl = 'https://wa.me/971561888234?text=' + encodeURIComponent(message);
+    window.open(whatsappUrl, '_blank');
 }
 
 // ===== دالة الانتقال إلى زينه للدفع =====
