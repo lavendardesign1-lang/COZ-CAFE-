@@ -81,7 +81,7 @@ let cart = [];
 // ===== Ziina Configuration =====
 const ZIINA_CONFIG = {
     apiKey: '8OKX7oHy/bm5O3fVJTeLQIvqM8P9unWyUxtBoqtrFFmaZbrPrEu+zP6zDZ9eWhQx',
-    basePaymentLink: 'https://pay.ziina.com/ar/sharjha11/rcErbFyPG'
+    basePaymentLink: 'https://pay.ziina.com/ar/sharjha11/'
 };
 
 // ===== تهيئة =====
@@ -414,7 +414,7 @@ function submitOrder(event) {
     saveCart();
     updateCartCount();
 
-    // الانتقال مباشرة إلى بوابة الدفع على Ziina مع معرف الطلب والمبلغ
+    // الانتقال مباشرة إلى بوابة الدفع على Ziina مع المبلغ الديناميكي
     redirectToZiinaPayment(orderId, total, name, phone);
 }
 
@@ -429,17 +429,15 @@ function saveOrderToHistory(orderData) {
     }
 }
 
-// ===== دالة الانتقال إلى زينه للدفع مع معرف الطلب والمبلغ =====
+// ===== دالة الانتقال إلى زينه للدفع مع المبلغ الديناميكي =====
 function redirectToZiinaPayment(orderId, amount, customerName, customerPhone) {
-    // بناء رابط الدفع مع إضافة معرف الطلب والمبلغ
-    let paymentUrl = ZIINA_CONFIG.basePaymentLink;
+    // إنشاء معرف فريد للدفع بناءً على رقم الطلب والمبلغ
+    const dynamicId = orderId + '-' + amount;
     
-    // إضافة معاملات الاستعلام (Query Parameters) لتمرير بيانات الطلب
-    paymentUrl += '?source=app';
-    paymentUrl += '&amount=' + encodeURIComponent(amount);
-    paymentUrl += '&orderId=' + encodeURIComponent(orderId);
-    paymentUrl += '&customerName=' + encodeURIComponent(customerName);
-    paymentUrl += '&customerPhone=' + encodeURIComponent(customerPhone);
+    // بناء رابط الدفع الديناميكي
+    let paymentUrl = ZIINA_CONFIG.basePaymentLink + encodeURIComponent(dynamicId);
+    paymentUrl += '?amount=' + encodeURIComponent(amount);
+    paymentUrl += '&source=app';
     
     // الانتقال إلى رابط الدفع
     window.location.href = paymentUrl;
