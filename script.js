@@ -78,6 +78,11 @@ const productsAr = {
 let products = productsAr;
 let cart = [];
 
+// ===== Ziina Configuration =====
+const ZIINA_CONFIG = {
+    apiKey: '8OKX7oHy/bm5O3fVJTeLQIvqM8P9unWyUxtBoqtrFFmaZbrPrEu+zP6zDZ9eWhQx'
+};
+
 // ===== تهيئة =====
 function init() {
     loadLang();
@@ -370,16 +375,15 @@ document.addEventListener('click', e => {
     }
 });
 
-// ===== تأكيد الطلب =====
+// ===== تأكيد الطلب والدفع عبر زينه =====
 function submitOrder(event) {
     event.preventDefault();
 
     const name    = document.getElementById('cust-name').value.trim();
     const phone   = document.getElementById('cust-phone').value.trim();
     const address = document.getElementById('cust-address').value.trim();
-    const payment = document.getElementById('cust-payment').value;
 
-    if (!name || !phone || !address || !payment) {
+    if (!name || !phone || !address) {
         alert(currentLang === 'ar' ? 'يرجى ملء جميع الحقول' : 'Please fill all fields');
         return;
     }
@@ -387,65 +391,53 @@ function submitOrder(event) {
     const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
     const orderId = 'ORD-' + Date.now();
 
-    let itemsHTML = '';
-    cart.forEach(item => {
-        itemsHTML += `
-            <div class="order-row">
-                <span>${item.name}</span>
-                <span>${item.quantity} × ${item.price} = ${item.quantity * item.price} AED</span>
-            </div>
-        `;
-    });
-
-    const labels = {
-        ar: {
-            success: '✓ تم تأكيد الطلب بنجاح!',
-            orderId: 'رقم الطلب',
-            name: 'الاسم',
-            phone: 'الهاتف',
-            address: 'العنوان',
-            payment: 'الدفع',
-            total: 'الإجمالي',
-            status: '⏳ قيد المعالجة – سيتم التواصل معك قريباً'
-        },
-        en: {
-            success: '✓ Order confirmed successfully!',
-            orderId: 'Order ID',
-            name: 'Name',
-            phone: 'Phone',
-            address: 'Address',
-            payment: 'Payment',
-            total: 'Total',
-            status: '⏳ Processing - We will contact you soon'
-        }
+    // حفظ بيانات الطلب
+    const orderData = {
+        orderId: orderId,
+        name: name,
+        phone: phone,
+        address: address,
+        items: cart,
+        total: total,
+        timestamp: new Date().toISOString()
     };
 
-    const l = labels[currentLang];
+    // حفظ في localStorage للمراجعة
+    localStorage.setItem('lastOrder', JSON.stringify(orderData));
 
-    const detailsHTML = `
-        <div class="order-success">${l.success}</div>
-        <div class="order-row"><span>${l.orderId}</span><strong>${orderId}</strong></div>
-        <div class="order-row"><span>${l.name}</span><span>${name}</span></div>
-        <div class="order-row"><span>${l.phone}</span><span>${phone}</span></div>
-        <div class="order-row"><span>${l.address}</span><span>${address}</span></div>
-        <div class="order-row"><span>${l.payment}</span><span>${payment}</span></div>
-        <hr style="margin:0.75rem 0;border-color:#f0e8e0">
-        ${itemsHTML}
-        <div class="order-row order-total">
-            <span>${l.total}</span>
-            <span>${total} AED</span>
-        </div>
-        <div class="order-status">${l.status}</div>
-    `;
-
-    document.getElementById('order-content').innerHTML = detailsHTML;
+    // إغلاق نموذج الدفع
     closeCheckoutModal();
-    document.getElementById('order-modal').classList.add('active');
 
-    document.getElementById('checkout-form').reset();
-    cart = [];
-    saveCart();
-    updateCartCount();
+    // الانتقال إلى رابط الدفع على زينه مباشرة
+    redirectToZiinaPayment(orderId, total, name, phone);
+}
+
+// ===== دالة الانتقال إلى زينه للدفع =====
+function redirectToZiinaPayment(orderId, amount, customerName, customerPhone) {
+    // إنشاء بيانات الطلب لإرسالها إلى زينه
+    const paymentData = {
+        amount: amount,
+        currency: 'AED',
+        orderId: orderId,
+        customerName: customerName,
+        customerPhone: customerPhone,
+        apiKey: ZIINA_CONFIG.apiKey
+    };
+
+    // حفظ البيانات مؤقتاً
+    sessionStorage.setItem('ziinaPaymentData', JSON.stringify(paymentData));
+
+    // رابط الدفع على زينه (قم بتحديث الرابط حسب احتياجاتك)
+    // تأكد من استبدال YOUR_MERCHANT_ID بمعرف التاجر الحقيقي من زينه
+    const ziinaPaymentUrl = 'https://ziina.sa/checkout?order=' + orderId + 
+                           '&amount=' + amount + 
+                           '&currency=AED&' +
+                           'customer_name=' + encodeURIComponent(customerName) +
+                           '&customer_phone=' + encodeURIComponent(customerPhone) +
+                           '&api_key=' + ZIINA_CONFIG.apiKey;
+
+    // الانتقال إلى بوابة الدفع الآمنة
+    window.location.href = ziinaPaymentUrl;
 }
 
 document.addEventListener('DOMContentLoaded', init);
