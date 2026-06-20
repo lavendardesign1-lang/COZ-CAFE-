@@ -407,7 +407,7 @@ function submitOrder(event) {
     localStorage.setItem('lastOrder', JSON.stringify(orderData));
     saveOrderToHistory(orderData);
 
-    // إرسال تفاصيل الطلب إلى واتساب التاجر
+    // إرسال تفاصيل الطلب إلى واتساب التاجر في الخلفية
     sendOrderToWhatsApp(orderData);
 
     // إغلاق النافذة وتصفير السلة
@@ -417,7 +417,7 @@ function submitOrder(event) {
     saveCart();
     updateCartCount();
 
-    // الانتقال إلى بوابة الدفع
+    // الانتقال إلى بوابة الدفع على Ziina
     redirectToZiinaPayment(orderId, total, name, phone);
 }
 
@@ -432,7 +432,7 @@ function saveOrderToHistory(orderData) {
     }
 }
 
-// ===== إرسال الطلب إلى واتساب التاجر =====
+// ===== إرسال الطلب إلى واتساب التاجر في الخلفية (بدون فتح نافذة) =====
 function sendOrderToWhatsApp(order) {
     const itemsList = order.items
         .map(i => '- ' + i.name + ': ' + i.quantity + ' x ' + i.price + ' AED = ' + (i.quantity * i.price) + ' AED')
@@ -454,13 +454,21 @@ function sendOrderToWhatsApp(order) {
     ];
     const message = lines.join('\n');
     const whatsappUrl = 'https://wa.me/971561888234?text=' + encodeURIComponent(message);
-    window.open(whatsappUrl, '_blank');
+    
+    // إرسال الرسالة في الخلفية باستخدام fetch (بدون فتح نافذة جديدة)
+    fetch(whatsappUrl, { mode: 'no-cors' }).catch(() => {
+        // إذا فشل fetch، استخدم طريقة بديلة
+        const img = new Image();
+        img.src = whatsappUrl;
+    });
 }
 
 // ===== دالة الانتقال إلى زينه للدفع =====
 function redirectToZiinaPayment(orderId, amount, customerName, customerPhone) {
-    // الانتقال إلى رابط الدفع على زينه مباشرة
-    window.location.href = ZIINA_CONFIG.paymentLink;
+    // تأخير بسيط للتأكد من أن WhatsApp أرسلت في الخلفية
+    setTimeout(() => {
+        window.location.href = ZIINA_CONFIG.paymentLink;
+    }, 500);
 }
 
 document.addEventListener('DOMContentLoaded', init);
