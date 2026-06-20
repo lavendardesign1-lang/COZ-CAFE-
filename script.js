@@ -80,7 +80,8 @@ let cart = [];
 
 // ===== Ziina Configuration =====
 const ZIINA_CONFIG = {
-    apiKey: '8OKX7oHy/bm5O3fVJTeLQIvqM8P9unWyUxtBoqtrFFmaZbrPrEu+zP6zDZ9eWhQx'
+    apiKey: '8OKX7oHy/bm5O3fVJTeLQIvqM8P9unWyUxtBoqtrFFmaZbrPrEu+zP6zDZ9eWhQx',
+    paymentLink: 'https://pay.ziina.com/ar/sharjha11/rcErbFyPG?source=app'
 };
 
 // ===== تهيئة =====
@@ -458,30 +459,8 @@ function sendOrderToWhatsApp(order) {
 
 // ===== دالة الانتقال إلى زينه للدفع =====
 function redirectToZiinaPayment(orderId, amount, customerName, customerPhone) {
-    // إنشاء بيانات الطلب لإرسالها إلى زينه
-    const paymentData = {
-        amount: amount,
-        currency: 'AED',
-        orderId: orderId,
-        customerName: customerName,
-        customerPhone: customerPhone,
-        apiKey: ZIINA_CONFIG.apiKey
-    };
-
-    // حفظ البيانات مؤقتاً
-    sessionStorage.setItem('ziinaPaymentData', JSON.stringify(paymentData));
-
-    // رابط الدفع على زينه (قم بتحديث الرابط حسب احتياجاتك)
-    // تأكد من استبدال YOUR_MERCHANT_ID بمعرف التاجر الحقيقي من زينه
-    const ziinaPaymentUrl = 'https://ziina.sa/checkout?order=' + orderId + 
-                           '&amount=' + amount + 
-                           '&currency=AED&' +
-                           'customer_name=' + encodeURIComponent(customerName) +
-                           '&customer_phone=' + encodeURIComponent(customerPhone) +
-                           '&api_key=' + ZIINA_CONFIG.apiKey;
-
-    // الانتقال إلى بوابة الدفع الآمنة
-    window.location.href = ziinaPaymentUrl;
+    // الانتقال إلى رابط الدفع على زينه مباشرة
+    window.location.href = ZIINA_CONFIG.paymentLink;
 }
 
 document.addEventListener('DOMContentLoaded', init);
