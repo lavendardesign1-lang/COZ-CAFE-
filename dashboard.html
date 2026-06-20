@@ -781,16 +781,18 @@ function renderOrders(orders) {
                 dateStr = d.toLocaleDateString(currentLang === 'ar' ? 'ar-AE' : 'en-GB') +
                           ' ' + d.toLocaleTimeString(currentLang === 'ar' ? 'ar-AE' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
             } catch(e) {
-                dateStr = order.timestamp;
+                dateStr = '';
             }
         }
 
         var itemsHtml = '';
         if (order.items && order.items.length) {
             order.items.forEach(function(item) {
-                var lineTotal = item.price * item.quantity;
+                var qty = Number(item.quantity) || 0;
+                var price = Number(item.price) || 0;
+                var lineTotal = qty * price;
                 itemsHtml += '<div class="order-item-row">' +
-                    '<span>' + item.name + ' &times; ' + item.quantity + '</span>' +
+                    '<span>' + escapeHtml(item.name) + ' &times; ' + qty + '</span>' +
                     '<span>' + lineTotal + ' AED</span>' +
                 '</div>';
             });
@@ -798,12 +800,14 @@ function renderOrders(orders) {
 
         var whatsappMsg = buildWhatsAppMessage(order);
         var whatsappUrl = 'https://wa.me/971561888234?text=' + encodeURIComponent(whatsappMsg);
+        var safeId = escapeHtml(order.orderId);
+        var safeTotal = Number(order.total) || 0;
 
-        html += '<div class="' + cardClass + '" id="order-' + order.orderId + '">' +
+        html += '<div class="' + cardClass + '">' +
             '<div class="order-top">' +
                 '<div>' +
-                    '<div class="order-id">' + t('orderNum') + ': ' + order.orderId + '</div>' +
-                    '<div class="order-date">' + dateStr + '</div>' +
+                    '<div class="order-id">' + t('orderNum') + ': ' + safeId + '</div>' +
+                    '<div class="order-date">' + escapeHtml(dateStr) + '</div>' +
                 '</div>' +
                 '<span class="status-badge ' + statusClass + '">' + statusText + '</span>' +
             '</div>' +
@@ -826,21 +830,32 @@ function renderOrders(orders) {
                 itemsHtml +
                 '<div class="order-total-row">' +
                     '<span>' + t('total') + '</span>' +
-                    '<span>' + order.total + ' AED</span>' +
+                    '<span>' + safeTotal + ' AED</span>' +
                 '</div>' +
             '</div>' +
             '<div class="order-actions">' +
-                '<a href="' + whatsappUrl + '" target="_blank" class="btn-whatsapp" rel="noopener noreferrer">&#128172; ' + t('whatsapp') + '</a>' +
+                '<a href="' + escapeHtml(whatsappUrl) + '" target="_blank" class="btn-whatsapp" rel="noopener noreferrer">&#128172; ' + t('whatsapp') + '</a>' +
                 (isCompleted
                     ? '<button class="btn-complete" disabled style="opacity:.5;cursor:default">' + t('alreadyComplete') + '</button>'
-                    : '<button class="btn-complete" onclick="markComplete(\'' + order.orderId + '\')">' + t('markComplete') + '</button>') +
-                '<button class="btn-delete" onclick="deleteOrder(\'' + order.orderId + '\')">' + t('deleteOrder') + '</button>' +
+                    : '<button class="btn-complete action-btn" data-action="complete" data-order-id="' + safeId + '">' + t('markComplete') + '</button>') +
+                '<button class="btn-delete action-btn" data-action="delete" data-order-id="' + safeId + '">' + t('deleteOrder') + '</button>' +
             '</div>' +
         '</div>';
     });
 
     container.innerHTML = html;
 }
+
+// ===== تفويض أحداث الأزرار (بدلاً من onclick مباشر في HTML) =====
+document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.action-btn');
+    if (!btn) return;
+    var orderId = btn.getAttribute('data-order-id');
+    var action = btn.getAttribute('data-action');
+    if (!orderId) return;
+    if (action === 'complete') markComplete(orderId);
+    if (action === 'delete') deleteOrder(orderId);
+});
 
 function escapeHtml(str) {
     if (!str) return '';
