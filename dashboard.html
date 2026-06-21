@@ -797,6 +797,9 @@
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <script>
         const CORRECT_PIN = '1234';
         let dashboardData = {
@@ -846,20 +849,66 @@
         // ===== تحميل بيانات لوحة التحكم =====
         function loadDashboardData() {
             loadProducts();
-            const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
-            
+
+            // تحميل الإعدادات من Firebase
+            if (typeof db !== 'undefined') {
+                db.ref('settings').once('value').then(snapshot => {
+                    const settings = snapshot.val();
+                    if (settings) {
+                        if (settings.ordersOpen !== undefined) {
+                            dashboardData.ordersOpen = settings.ordersOpen;
+                            localStorage.setItem('ordersOpen', settings.ordersOpen);
+                        }
+                        if (settings.emailNotifications !== undefined) {
+                            dashboardData.emailNotifications = settings.emailNotifications;
+                            localStorage.setItem('emailNotifications', settings.emailNotifications);
+                        }
+                        if (settings.productsAvailability) {
+                            dashboardData.productsAvailability = settings.productsAvailability;
+                            localStorage.setItem('productsAvailability', JSON.stringify(settings.productsAvailability));
+                        }
+                    }
+                    document.getElementById('orderToggle').checked = dashboardData.ordersOpen;
+                    document.getElementById('emailToggle').checked = dashboardData.emailNotifications;
+                }).catch(() => {
+                    document.getElementById('orderToggle').checked = dashboardData.ordersOpen;
+                    document.getElementById('emailToggle').checked = dashboardData.emailNotifications;
+                });
+
+                // تحميل الطلبات من Firebase
+                db.ref('orders').once('value').then(snapshot => {
+                    const firebaseOrdersObj = snapshot.val();
+                    let orders = [];
+                    if (firebaseOrdersObj) {
+                        orders = Object.values(firebaseOrdersObj);
+                        orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        localStorage.setItem('cozOrders', JSON.stringify(orders));
+                    } else {
+                        orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                    }
+                    updateOrderStats(orders);
+                }).catch(() => {
+                    const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                    updateOrderStats(orders);
+                });
+            } else {
+                const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                updateOrderStats(orders);
+                document.getElementById('orderToggle').checked = dashboardData.ordersOpen;
+                document.getElementById('emailToggle').checked = dashboardData.emailNotifications;
+            }
+        }
+
+        function updateOrderStats(orders) {
             document.getElementById('totalOrders').textContent = orders.length;
             document.getElementById('pendingOrders').textContent = orders.filter(o => o.status === 'pending').length;
-            
             const revenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
             document.getElementById('totalRevenue').textContent = revenue + ' AED';
-
-            document.getElementById('orderToggle').checked = dashboardData.ordersOpen;
-            document.getElementById('emailToggle').checked = dashboardData.emailNotifications;
         }
 
         // ===== تحميل المنتجات =====
         function loadProducts() {
+            // تحميل فوري من localStorage
             try {
                 const saved = localStorage.getItem('cozProducts');
                 if (saved) {
@@ -870,6 +919,19 @@
             } catch (e) {
                 initializeDefaultProducts();
             }
+
+            // مزامنة من Firebase في الخلفية
+            if (typeof db === 'undefined') return;
+            db.ref('products').once('value').then(snapshot => {
+                const firebaseProducts = snapshot.val();
+                if (firebaseProducts) {
+                    products = firebaseProducts;
+                    localStorage.setItem('cozProducts', JSON.stringify(products));
+                    loadManagedProducts();
+                } else {
+                    db.ref('products').set(products).catch(e => console.error('Firebase products upload error:', e));
+                }
+            }).catch(e => console.error('Firebase products load error:', e));
         }
 
         function initializeDefaultProducts() {
@@ -920,11 +982,36 @@
 
         function saveProducts() {
             localStorage.setItem('cozProducts', JSON.stringify(products));
+            if (typeof db !== 'undefined') {
+                db.ref('products').set(products).catch(e => console.error('Firebase products save error:', e));
+            }
         }
 
         // ===== تحميل الطلبات =====
         function loadOrders() {
-            const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+            if (typeof db !== 'undefined') {
+                db.ref('orders').once('value').then(snapshot => {
+                    const firebaseOrdersObj = snapshot.val();
+                    let orders = [];
+                    if (firebaseOrdersObj) {
+                        orders = Object.values(firebaseOrdersObj);
+                        orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        localStorage.setItem('cozOrders', JSON.stringify(orders));
+                    } else {
+                        orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                    }
+                    renderOrdersTable(orders);
+                }).catch(() => {
+                    const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                    renderOrdersTable(orders);
+                });
+            } else {
+                const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                renderOrdersTable(orders);
+            }
+        }
+
+        function renderOrdersTable(orders) {
             const tbody = document.getElementById('ordersBody');
             tbody.innerHTML = '';
 
@@ -953,27 +1040,37 @@
         }
 
         function acceptOrder(orderId) {
+            // تحديث في Firebase
+            if (typeof db !== 'undefined') {
+                db.ref('orders/' + orderId + '/status').set('accepted')
+                    .catch(e => console.error('Firebase update error:', e));
+            }
+            // تحديث في localStorage
             const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
             const order = orders.find(o => o.orderId === orderId);
-            
             if (order) {
                 order.status = 'accepted';
                 localStorage.setItem('cozOrders', JSON.stringify(orders));
-                loadOrders();
-                alert('✓ تم قبول الطلب: ' + orderId);
             }
+            loadOrders();
+            alert('✓ تم قبول الطلب: ' + orderId);
         }
 
         function completeOrder(orderId) {
+            // تحديث في Firebase
+            if (typeof db !== 'undefined') {
+                db.ref('orders/' + orderId + '/status').set('completed')
+                    .catch(e => console.error('Firebase update error:', e));
+            }
+            // تحديث في localStorage
             const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
             const order = orders.find(o => o.orderId === orderId);
-            
             if (order) {
                 order.status = 'completed';
                 localStorage.setItem('cozOrders', JSON.stringify(orders));
-                loadOrders();
-                alert('✓ تم إتمام الطلب: ' + orderId);
             }
+            loadOrders();
+            alert('✓ تم إتمام الطلب: ' + orderId);
         }
 
         // ===== إدارة المنتجات =====
@@ -1107,11 +1204,19 @@
         function toggleOrders() {
             dashboardData.ordersOpen = document.getElementById('orderToggle').checked;
             localStorage.setItem('ordersOpen', dashboardData.ordersOpen);
+            if (typeof db !== 'undefined') {
+                db.ref('settings/ordersOpen').set(dashboardData.ordersOpen)
+                    .catch(e => console.error('Firebase settings save error:', e));
+            }
         }
 
         function toggleEmail() {
             dashboardData.emailNotifications = document.getElementById('emailToggle').checked;
             localStorage.setItem('emailNotifications', dashboardData.emailNotifications);
+            if (typeof db !== 'undefined') {
+                db.ref('settings/emailNotifications').set(dashboardData.emailNotifications)
+                    .catch(e => console.error('Firebase settings save error:', e));
+            }
         }
 
         function loadProductsAvailability() {
@@ -1128,36 +1233,60 @@
                 { id: 10, name: 'روكي رود – 2 قطعة' }
             ];
 
-            const grid = document.getElementById('productsGrid');
-            grid.innerHTML = '';
-            
-            dashboardData.productsAvailability = JSON.parse(localStorage.getItem('productsAvailability') || '{}');
+            // مزامنة التوفر من Firebase قبل العرض
+            const renderAvailability = () => {
+                const grid = document.getElementById('productsGrid');
+                grid.innerHTML = '';
 
-            products.forEach(product => {
-                const available = dashboardData.productsAvailability[product.id] !== false;
-                const item = document.createElement('div');
-                item.className = 'product-item';
-                item.innerHTML = `
-                    <h4>${product.name}</h4>
-                    <div class="product-status">
-                        <span class="status-indicator ${available ? 'available' : 'unavailable'}"></span>
-                        <span>${available ? 'متوفر' : 'غير متوفر'}</span>
-                    </div>
-                    <button class="btn ${available ? 'btn-danger' : 'btn-success'}" 
-                            onclick="toggleProduct(${product.id})">
-                        ${available ? 'عدم التوفر' : 'توفر'}
-                    </button>
-                `;
-                grid.appendChild(item);
-            });
+                products.forEach(product => {
+                    const available = dashboardData.productsAvailability[product.id] !== false;
+                    const item = document.createElement('div');
+                    item.className = 'product-item';
+                    item.innerHTML = `
+                        <h4>${product.name}</h4>
+                        <div class="product-status">
+                            <span class="status-indicator ${available ? 'available' : 'unavailable'}"></span>
+                            <span>${available ? 'متوفر' : 'غير متوفر'}</span>
+                        </div>
+                        <button class="btn ${available ? 'btn-danger' : 'btn-success'}" 
+                                onclick="toggleProduct(${product.id})">
+                            ${available ? 'عدم التوفر' : 'توفر'}
+                        </button>
+                    `;
+                    grid.appendChild(item);
+                });
 
-            document.getElementById('availabilityCard').style.display = 'block';
+                document.getElementById('availabilityCard').style.display = 'block';
+            };
+
+            if (typeof db !== 'undefined') {
+                db.ref('settings/productsAvailability').once('value').then(snapshot => {
+                    const val = snapshot.val();
+                    if (val) {
+                        dashboardData.productsAvailability = val;
+                        localStorage.setItem('productsAvailability', JSON.stringify(val));
+                    } else {
+                        dashboardData.productsAvailability = JSON.parse(localStorage.getItem('productsAvailability') || '{}');
+                    }
+                    renderAvailability();
+                }).catch(() => {
+                    dashboardData.productsAvailability = JSON.parse(localStorage.getItem('productsAvailability') || '{}');
+                    renderAvailability();
+                });
+            } else {
+                dashboardData.productsAvailability = JSON.parse(localStorage.getItem('productsAvailability') || '{}');
+                renderAvailability();
+            }
         }
 
         function toggleProduct(productId) {
             const current = dashboardData.productsAvailability[productId];
             dashboardData.productsAvailability[productId] = current === false ? true : false;
             localStorage.setItem('productsAvailability', JSON.stringify(dashboardData.productsAvailability));
+            if (typeof db !== 'undefined') {
+                db.ref('settings/productsAvailability').set(dashboardData.productsAvailability)
+                    .catch(e => console.error('Firebase availability save error:', e));
+            }
             loadProductsAvailability();
         }
 

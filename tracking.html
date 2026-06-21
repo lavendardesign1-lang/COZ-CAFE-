@@ -350,20 +350,44 @@
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <script>
         let currentOrder = null;
         let refreshInterval = null;
         let pollCount = 0;
+        let firebaseListener = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             const orderId = getOrderIdFromURL();
             if (orderId) {
-                loadOrder(orderId);
-                // تحديث البيانات كل ثانية
-                refreshInterval = setInterval(() => {
-                    loadOrder(orderId);
-                    pollCount++;
-                }, 1000);
+                if (typeof db !== 'undefined') {
+                    // استخدام Firebase للتحديث الفوري
+                    firebaseListener = db.ref('orders/' + orderId).on('value', snapshot => {
+                        const order = snapshot.val();
+                        if (order) {
+                            currentOrder = order;
+                            renderTracking();
+                        } else {
+                            loadOrderFromLocalStorage(orderId);
+                        }
+                    }, () => {
+                        // خطأ Firebase - استخدام localStorage مع فاصل زمني
+                        loadOrderFromLocalStorage(orderId);
+                        refreshInterval = setInterval(() => {
+                            loadOrderFromLocalStorage(orderId);
+                            pollCount++;
+                        }, 1000);
+                    });
+                } else {
+                    // لا Firebase - استخدام localStorage مع فاصل زمني
+                    loadOrderFromLocalStorage(orderId);
+                    refreshInterval = setInterval(() => {
+                        loadOrderFromLocalStorage(orderId);
+                        pollCount++;
+                    }, 1000);
+                }
             } else {
                 showEmptyState();
             }
@@ -371,6 +395,10 @@
 
         window.addEventListener('beforeunload', () => {
             if (refreshInterval) clearInterval(refreshInterval);
+            if (firebaseListener && typeof db !== 'undefined') {
+                const orderId = getOrderIdFromURL();
+                if (orderId) db.ref('orders/' + orderId).off('value', firebaseListener);
+            }
         });
 
         function getOrderIdFromURL() {
@@ -379,6 +407,10 @@
         }
 
         function loadOrder(orderId) {
+            loadOrderFromLocalStorage(orderId);
+        }
+
+        function loadOrderFromLocalStorage(orderId) {
             try {
                 const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
                 const order = orders.find(o => o.orderId === orderId);
@@ -401,10 +433,17 @@
             const status = currentOrder.status || 'pending';
             const content = document.getElementById('trackingContent');
 
+            const esc = (v) => String(v == null ? '' : v)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
             let html = `
                 <div class="order-number">
                     <label>رقم الطلب</label>
-                    <div class="id">${currentOrder.orderId}</div>
+                    <div class="id">${esc(currentOrder.orderId)}</div>
                 </div>
 
                 <div class="timeline">
@@ -415,23 +454,23 @@
                     <h3>📋 معلومات الطلب</h3>
                     <div class="detail-row">
                         <span class="detail-label">الاسم:</span>
-                        <span class="detail-value">${currentOrder.name}</span>
+                        <span class="detail-value">${esc(currentOrder.name)}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">رقم الهاتف:</span>
-                        <span class="detail-value">${currentOrder.phone}</span>
+                        <span class="detail-value">${esc(currentOrder.phone)}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">رقم السيارة:</span>
-                        <span class="detail-value">${currentOrder.carNumber || 'N/A'}</span>
+                        <span class="detail-value">${esc(currentOrder.carNumber || 'N/A')}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">التاريخ والوقت:</span>
-                        <span class="detail-value">${new Date(currentOrder.timestamp).toLocaleString('ar-SA')}</span>
+                        <span class="detail-value">${esc(new Date(currentOrder.timestamp).toLocaleString('ar-SA'))}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">المجموع:</span>
-                        <span class="detail-value" style="font-size: 18px; color: #8B6914;">${currentOrder.total} AED</span>
+                        <span class="detail-value" style="font-size: 18px; color: #8B6914;">${esc(currentOrder.total)} AED</span>
                     </div>
                 </div>
 
@@ -439,8 +478,8 @@
                     <h3>📦 المنتجات</h3>
                     ${currentOrder.items ? currentOrder.items.map(item => `
                         <div class="item">
-                            <span class="item-name">${item.name} × ${item.quantity}</span>
-                            <span class="item-price">${item.price * item.quantity} AED</span>
+                            <span class="item-name">${esc(item.name)} × ${esc(item.quantity)}</span>
+                            <span class="item-price">${esc(item.price * item.quantity)} AED</span>
                         </div>
                     `).join('') : '<p style="color: #999;">لا توجد منتجات</p>'}
                 </div>

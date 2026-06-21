@@ -48,6 +48,23 @@ function init() {
     loadCart();
     renderProducts();
     setupLanguageButtons();
+    syncSettingsFromFirebase();
+}
+
+// ===== مزامنة الإعدادات من Firebase =====
+function syncSettingsFromFirebase() {
+    if (typeof db === 'undefined') return;
+    db.ref('settings').once('value').then(snapshot => {
+        const settings = snapshot.val();
+        if (!settings) return;
+        if (settings.ordersOpen !== undefined) {
+            localStorage.setItem('ordersOpen', settings.ordersOpen);
+        }
+        if (settings.productsAvailability) {
+            localStorage.setItem('productsAvailability', JSON.stringify(settings.productsAvailability));
+            renderProducts();
+        }
+    }).catch(e => console.error('Firebase settings sync error:', e));
 }
 
 function loadLang() {
@@ -63,21 +80,36 @@ function setupLanguageButtons() {
     });
 }
 
-// ===== تحميل المنتجات من localStorage =====
+// ===== تحميل المنتجات من Firebase أو localStorage =====
 function loadProducts() {
+    // تحميل فوري من localStorage
     try {
         const saved = localStorage.getItem('cozProducts');
         if (saved) {
             products = JSON.parse(saved);
             console.log('✅ تم تحميل المنتجات من localStorage');
         } else {
-            // استخدام المنتجات الافتراضية
             initializeDefaultProducts();
         }
     } catch (e) {
         console.error('Error loading products:', e);
         initializeDefaultProducts();
     }
+
+    // مزامنة من Firebase في الخلفية
+    if (typeof db === 'undefined') return;
+    db.ref('products').once('value').then(snapshot => {
+        const firebaseProducts = snapshot.val();
+        if (firebaseProducts) {
+            products = firebaseProducts;
+            localStorage.setItem('cozProducts', JSON.stringify(products));
+            console.log('✅ تم تحميل المنتجات من Firebase');
+            renderProducts();
+        } else {
+            // لا توجد بيانات في Firebase - رفع البيانات الحالية
+            db.ref('products').set(products).catch(e => console.error('Firebase products upload error:', e));
+        }
+    }).catch(e => console.error('Firebase products load error:', e));
 }
 
 // ===== المنتجات الافتراضية =====
@@ -491,6 +523,12 @@ function saveOrderToHistory(orderData) {
         const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
         orders.unshift(orderData);
         localStorage.setItem('cozOrders', JSON.stringify(orders));
+
+        // حفظ في Firebase
+        if (typeof db !== 'undefined') {
+            db.ref('orders/' + orderData.orderId).set(orderData)
+                .catch(e => console.error('Firebase order save error:', e));
+        }
 
         // إرسال إشعار بريد إلكتروني إذا كانت الإشعارات مفعلة
         if (localStorage.getItem('emailNotifications') !== 'false') {
