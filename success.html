@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تم إتمام الطلب - COZ CAFE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .order-id {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .order-id strong {
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .timeline {
+            background: #f9f9f9;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: right;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 15px;
+            top: 50px;
+            width: 2px;
+            height: 40px;
+            background: #ddd;
+        }
+
+        .timeline-dot {
+            width: 35px;
+            height: 35px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .timeline-dot.pending {
+            background: #FF9800;
+        }
+
+        .timeline-dot.completed {
+            background: #4CAF50;
+        }
+
+        .timeline-text {
+            flex: 1;
+        }
+
+        .timeline-text h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .timeline-text p {
+            color: #999;
+            font-size: 13px;
+        }
+
+        .order-details {
+            background: #f0f4ff;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: right;
+        }
+
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+        }
+
+        .details-row:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .details-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .details-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .message {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-right: 4px solid #4CAF50;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .success-container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✓</div>
+        
+        <h1>تم إتمام الطلب بنجاح! 🎉</h1>
+        <div class="order-id">
+            رقم الطلب: <strong id="orderId">---</strong>
+        </div>
+
+        <div class="order-details">
+            <div class="details-row">
+                <span class="details-label">الاسم:</span>
+                <span class="details-value" id="customerName">---</span>
+            </div>
+            <div class="details-row">
+                <span class="details-label">الهاتف:</span>
+                <span class="details-value" id="customerPhone">---</span>
+            </div>
+            <div class="details-row">
+                <span class="details-label">العنوان:</span>
+                <span class="details-value" id="customerAddress">---</span>
+            </div>
+            <div class="details-row">
+                <span class="details-label">المجموع:</span>
+                <span class="details-value" id="totalAmount">0 AED</span>
+            </div>
+            <div class="details-row">
+                <span class="details-label">حالة الدفع:</span>
+                <span class="details-value" style="color: #4CAF50;">✓ تم الدفع</span>
+            </div>
+        </div>
+
+        <div class="timeline">
+            <h3 style="margin-bottom: 25px; color: #333;">خط سير الطلب</h3>
+            
+            <div class="timeline-item">
+                <div class="timeline-dot completed">✓</div>
+                <div class="timeline-text">
+                    <h3>تم تقديم الطلب</h3>
+                    <p id="submittedTime">للتو</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot completed">✓</div>
+                <div class="timeline-text">
+                    <h3>تم إتمام الدفع</h3>
+                    <p id="paidTime">للتو</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot pending">⏳</div>
+                <div class="timeline-text">
+                    <h3>في الانتظار (قريباً)</h3>
+                    <p>سيتم قبول الطلب من قبل المتجر</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot pending">⏳</div>
+                <div class="timeline-text">
+                    <h3>قيد التحضير</h3>
+                    <p>جاري تحضير الطلب</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot pending">⏳</div>
+                <div class="timeline-text">
+                    <h3>جاهز للتسليم</h3>
+                    <p>سيتم إخطارك عند التسليم</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="message">
+            ✓ تم استلام طلبك بنجاح! سنقوم بمراجعته وتأكيده قريباً. ستصلك إشعارات عند كل تحديث للطلب.
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="goHome()">العودة للرئيسية</button>
+            <button class="btn btn-secondary" onclick="viewOrders()">عرض طلباتي</button>
+        </div>
+    </div>
+
+    <script>
+        // تحميل بيانات الطلب من localStorage
+        function loadOrderData() {
+            const lastOrder = JSON.parse(localStorage.getItem('lastOrder') || '{}');
+            
+            document.getElementById('orderId').textContent = lastOrder.orderId || '---';
+            document.getElementById('customerName').textContent = lastOrder.name || '---';
+            document.getElementById('customerPhone').textContent = lastOrder.phone || '---';
+            document.getElementById('customerAddress').textContent = lastOrder.address || '---';
+            document.getElementById('totalAmount').textContent = (lastOrder.total || 0) + ' AED';
+            
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ar-AE');
+            document.getElementById('submittedTime').textContent = timeStr;
+            document.getElementById('paidTime').textContent = timeStr;
+        }
+
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        function viewOrders() {
+            // يمكن إضافة صفحة لعرض طلبات العميل
+            alert('سيتم إضافة هذه الميزة قريباً');
+        }
+
+        // تحميل البيانات عند فتح الصفحة
+        window.addEventListener('DOMContentLoaded', loadOrderData);
+    </script>
+</body>
+</html>
