@@ -72,8 +72,7 @@
             font-size: 14px;
         }
 
-        .form-group input,
-        .form-group textarea {
+        .form-group input {
             width: 100%;
             padding: 12px;
             border: 1px solid #D2B48C;
@@ -83,17 +82,11 @@
             transition: all 0.3s ease;
         }
 
-        .form-group input:focus,
-        .form-group textarea:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #8B6914;
             box-shadow: 0 0 8px rgba(139, 105, 20, 0.3);
             background: #fffbf0;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
         }
 
         .order-summary {
@@ -181,53 +174,6 @@
             border-top: 1px solid #eee;
             padding-top: 10px;
             margin-top: 10px;
-        }
-
-        .payment-methods {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-
-        .payment-methods h3 {
-            color: #8B6914;
-            font-size: 14px;
-            margin-bottom: 12px;
-        }
-
-        .method-option {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            margin-bottom: 8px;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .method-option:hover {
-            border-color: #D2B48C;
-        }
-
-        .method-option input {
-            margin-left: 10px;
-            cursor: pointer;
-            width: 18px;
-            height: 18px;
-        }
-
-        .method-option label {
-            cursor: pointer;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .method-icon {
-            font-size: 18px;
         }
 
         .button-group {
@@ -380,13 +326,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label>البريد الإلكتروني</label>
-                        <input type="email" id="customerEmail" placeholder="your@email.com">
-                    </div>
-
-                    <div class="form-group">
-                        <label>العنوان *</label>
-                        <textarea id="customerAddress" placeholder="الشارع، المدينة..." required></textarea>
+                        <label>رقم السيارة *</label>
+                        <input type="text" id="carNumber" placeholder="مثال: UAE 1234" required>
                     </div>
 
                     <div class="info-box">
@@ -415,24 +356,6 @@
                     <div class="total-row final">
                         <span>المجموع:</span>
                         <span id="totalPrice">0 AED</span>
-                    </div>
-                </div>
-
-                <div class="payment-methods">
-                    <h3>💳 طريقة الدفع</h3>
-                    <div class="method-option">
-                        <label>
-                            <input type="radio" name="paymentMethod" value="ziina" checked>
-                            <span class="method-icon">💳</span>
-                            <span>Ziina - بطاقة ائتمان</span>
-                        </label>
-                    </div>
-                    <div class="method-option">
-                        <label>
-                            <input type="radio" name="paymentMethod" value="cash">
-                            <span class="method-icon">💵</span>
-                            <span>الدفع عند الاستلام</span>
-                        </label>
                     </div>
                 </div>
 
@@ -516,12 +439,10 @@
 
             const name = document.getElementById('customerName').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
-            const email = document.getElementById('customerEmail').value.trim();
-            const address = document.getElementById('customerAddress').value.trim();
-            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            const carNumber = document.getElementById('carNumber').value.trim();
 
             // التحقق من البيانات
-            if (!name || !phone || !address) {
+            if (!name || !phone || !carNumber) {
                 showError('يرجى ملء جميع الحقول المطلوبة');
                 return;
             }
@@ -531,17 +452,12 @@
                 return;
             }
 
-            // إذا كان الدفع الإلكتروني
-            if (paymentMethod === 'ziina') {
-                await processZiinaPayment(name, phone, email, address);
-            } else {
-                // الدفع عند الاستلام
-                processCashPayment(name, phone, email, address);
-            }
+            // معالجة دفع Ziina
+            await processZiinaPayment(name, phone, carNumber);
         }
 
         // معالجة دفع Ziina
-        async function processZiinaPayment(name, phone, email, address) {
+        async function processZiinaPayment(name, phone, carNumber) {
             showLoading(true);
             hideMessages();
 
@@ -554,8 +470,7 @@
                     orderId: orderId,
                     name: name,
                     phone: phone,
-                    email: email,
-                    address: address,
+                    carNumber: carNumber,
                     items: cart.map(i => ({ ...i })),
                     subtotal: cart.reduce((s, i) => s + (i.price * i.quantity), 0),
                     delivery: deliveryFee,
@@ -587,57 +502,15 @@
         // إنشاء رابط الدفع
         function createPaymentLink(orderData) {
             const params = new URLSearchParams({
-                amount: orderData.total * 100, // بالفلس
+                amount: orderData.total,
                 customer_name: orderData.name,
                 customer_phone: orderData.phone,
-                customer_email: orderData.email || '',
                 order_id: orderData.orderId,
                 description: 'COZ CAFE Order',
                 redirect_url: window.location.origin + window.location.pathname.replace('payment.html', 'success.html') + '?order=' + orderData.orderId
             });
 
             return ZIINA_BASE_URL + '?' + params.toString();
-        }
-
-        // معالجة الدفع عند الاستلام
-        function processCashPayment(name, phone, email, address) {
-            showLoading(true);
-
-            try {
-                const orderId = 'ORD-' + Date.now();
-                const total = calculateTotal();
-
-                const orderData = {
-                    orderId: orderId,
-                    name: name,
-                    phone: phone,
-                    email: email,
-                    address: address,
-                    items: cart.map(i => ({ ...i })),
-                    subtotal: cart.reduce((s, i) => s + (i.price * i.quantity), 0),
-                    delivery: deliveryFee,
-                    total: total,
-                    status: 'pending',
-                    timestamp: new Date().toISOString(),
-                    paymentMethod: 'cash'
-                };
-
-                // حفظ الطلب
-                saveOrder(orderData);
-
-                // إفراغ السلة
-                localStorage.removeItem('cozCart');
-
-                // إعادة التوجيه لصفحة النجاح
-                showSuccess('✓ تم تأكيد الطلب! جاري التوجيه...');
-                setTimeout(() => {
-                    window.location.href = 'success.html?order=' + orderId;
-                }, 1500);
-
-            } catch (error) {
-                showLoading(false);
-                showError('حدث خطأ: ' + error.message);
-            }
         }
 
         // حفظ الطلب
