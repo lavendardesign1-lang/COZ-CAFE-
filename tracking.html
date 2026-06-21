@@ -344,10 +344,10 @@
             const orderId = getOrderIdFromURL();
             if (orderId) {
                 loadOrder(orderId);
-                // تحديث البيانات كل 3 ثوانٍ
+                // تحديث البيانات كل ثانية
                 refreshInterval = setInterval(() => {
                     loadOrder(orderId);
-                }, 3000);
+                }, 1000);
             } else {
                 showEmptyState();
             }
@@ -368,7 +368,10 @@
                 const order = orders.find(o => o.orderId === orderId);
                 
                 if (order) {
-                    currentOrder = order;
+                    currentOrder = {
+                        ...order,
+                        status: normalizeStatus(order.status)
+                    };
                     renderTracking();
                 } else {
                     showEmptyState();
@@ -382,7 +385,7 @@
         function renderTracking() {
             if (!currentOrder) return;
 
-            const status = currentOrder.status || 'pending';
+            const status = normalizeStatus(currentOrder.status);
             const content = document.getElementById('trackingContent');
 
             let html = `
@@ -441,7 +444,7 @@
         function getTimelineHTML(status) {
             const statuses = [
                 { key: 'pending', icon: '⏳', title: 'في الانتظار', desc: 'جاري مراجعة الطلب' },
-                { key: 'approved', icon: '✅', title: 'تم القبول', desc: 'تم قبول طلبك' },
+                { key: 'approved', icon: '✅', title: 'جاري التحضير', desc: 'تم قبول طلبك وبدأ التحضير' },
                 { key: 'preparing', icon: '👨‍🍳', title: 'قيد الإعداد', desc: 'جاري تحضير الطلب' },
                 { key: 'ready', icon: '🚗', title: 'جاهز للتقديم', desc: 'طلبك جاهز الآن' },
                 { key: 'completed', icon: '✔️', title: 'مكتمل', desc: 'تم استلام الطلب' }
@@ -475,6 +478,13 @@
                 return 'في الانتظار...';
             }
             return 'تم';
+        }
+
+        function normalizeStatus(status) {
+            if (status === 'accepted') return 'approved';
+            if (status === 'confirmed') return 'completed';
+            const validStatuses = ['pending', 'approved', 'preparing', 'ready', 'completed'];
+            return validStatuses.includes(status) ? status : 'pending';
         }
 
         function showEmptyState() {

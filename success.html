@@ -295,7 +295,8 @@
         let lastOrder = null;
         let orderId = null;
         let checkCount = 0;
-        const MAX_CHECKS = 24; // 2 دقيقة (24 × 5 ثواني)
+        let redirectScheduled = false;
+        const MAX_CHECKS = 2; // ثانية واحدة تقريباً (2 × 0.5 ثانية)
 
         window.addEventListener('DOMContentLoaded', () => {
             // الحصول على order ID من URL
@@ -307,7 +308,7 @@
             
             // ابدأ التحقق من الدفع
             checkPaymentStatus();
-            setInterval(checkPaymentStatus, 5000); // كل 5 ثواني
+            setInterval(checkPaymentStatus, 500); // كل نصف ثانية
         });
 
         function loadOrderData() {
@@ -347,12 +348,8 @@
                 
                 if (updatedOrder) {
                     lastOrder = updatedOrder;
-                    
-                    // إذا الحالة تغيرت من pending لـ completed
-                    if (lastOrder.status === 'completed' || lastOrder.status === 'confirmed') {
-                        paymentConfirmed();
-                        return;
-                    }
+                    paymentConfirmed();
+                    return;
                 }
             } catch (e) {
                 console.error('Error checking status:', e);
@@ -365,6 +362,9 @@
         }
 
         function paymentConfirmed() {
+            if (redirectScheduled) return;
+            redirectScheduled = true;
+
             // تحديث الحالة
             const paymentInfo = document.getElementById('paymentInfo');
             paymentInfo.innerHTML = '<strong>✅ تم الدفع بنجاح!</strong>';
@@ -381,10 +381,10 @@
             const redirectMessage = document.getElementById('redirectMessage');
             redirectMessage.textContent = '🎉 تم تأكيد الدفع! جاري التوجيه لمتابعة الطلب...';
             
-            // توجيه تلقائي بعد 3 ثواني
+            // توجيه تلقائي سريع بعد ثانية واحدة
             setTimeout(() => {
                 goToTracking();
-            }, 3000);
+            }, 1000);
         }
 
         function renderOrderDetails() {
@@ -431,10 +431,14 @@
                 try {
                     const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
                     const index = orders.findIndex(o => o.orderId === lastOrder.orderId);
+                    lastOrder.status = lastOrder.status || 'pending';
                     if (index >= 0) {
                         orders[index] = lastOrder;
-                        localStorage.setItem('cozOrders', JSON.stringify(orders));
+                    } else {
+                        orders.unshift(lastOrder);
                     }
+                    localStorage.setItem('cozOrders', JSON.stringify(orders));
+                    localStorage.setItem('lastOrder', JSON.stringify(lastOrder));
                 } catch (e) {
                     console.error('Error:', e);
                 }

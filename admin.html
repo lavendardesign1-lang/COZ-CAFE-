@@ -211,6 +211,11 @@
             background: #faf5ff;
         }
 
+        .order-card.completed {
+            border-right-color: #6c757d;
+            background: #f8f9fa;
+        }
+
         .order-info h3 {
             color: #333;
             font-size: 16px;
@@ -270,6 +275,11 @@
         .status-badge.ready {
             background: #e2e3e5;
             color: #383d41;
+        }
+
+        .status-badge.completed {
+            background: #d6d8db;
+            color: #343a40;
         }
 
         .order-actions {
@@ -428,6 +438,7 @@
                 <button class="filter-btn" onclick="filterOrders('approved')">✅ مقبولة</button>
                 <button class="filter-btn" onclick="filterOrders('preparing')">👨‍🍳 قيد الإعداد</button>
                 <button class="filter-btn" onclick="filterOrders('ready')">🚗 جاهزة</button>
+                <button class="filter-btn" onclick="filterOrders('completed')">✔️ مكتملة</button>
             </div>
 
             <div class="orders-list" id="ordersList">
@@ -447,18 +458,20 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadOrders();
             updateStats();
-            // تحديث البيانات كل 3 ثوانٍ
+            // تحديث البيانات كل ثانية
             setInterval(() => {
                 loadOrders();
                 updateStats();
-            }, 3000);
+            }, 1000);
         });
 
         // تحميل الطلبات من localStorage
         function loadOrders() {
             try {
                 const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
-                allOrders = orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                allOrders = orders
+                    .map(order => ({ ...order, status: normalizeStatus(order.status) }))
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 renderOrders();
             } catch (e) {
                 console.error('Error loading orders:', e);
@@ -576,6 +589,7 @@
 
         // نص الحالة
         function getStatusText(status) {
+            status = normalizeStatus(status);
             const statuses = {
                 'pending': '⏳ في الانتظار',
                 'approved': '✅ مقبول',
@@ -592,6 +606,13 @@
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             renderOrders();
+        }
+
+        function normalizeStatus(status) {
+            if (status === 'accepted') return 'approved';
+            if (status === 'confirmed') return 'completed';
+            const validStatuses = ['pending', 'approved', 'preparing', 'ready', 'completed'];
+            return validStatuses.includes(status) ? status : 'pending';
         }
 
         // تحديث البيانات

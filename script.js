@@ -465,13 +465,17 @@ function submitOrder(event) {
 // ===== حفظ الطلب في سجل الطلبات =====
 function saveOrderToHistory(orderData) {
     try {
+        const normalizedOrder = {
+            ...orderData,
+            status: orderData.status || 'pending'
+        };
         const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
-        orders.unshift(orderData);
+        orders.unshift(normalizedOrder);
         localStorage.setItem('cozOrders', JSON.stringify(orders));
 
         // إرسال إشعار بريد إلكتروني إذا كانت الإشعارات مفعلة
         if (localStorage.getItem('emailNotifications') !== 'false') {
-            sendEmailNotification(orderData);
+            sendEmailNotification(normalizedOrder);
         }
     } catch (e) {
         console.error('Error saving order:', e);
