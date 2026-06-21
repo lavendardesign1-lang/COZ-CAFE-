@@ -34,12 +34,8 @@ function changeLanguage(lang) {
 let products = {};
 
 let cart = [];
-
-// ===== Ziina Configuration =====
-const ZIINA_CONFIG = {
-    apiKey: '8OKX7oHy/bm5O3fVJTeLQIvqM8P9unWyUxtBoqtrFFmaZbrPrEu+zP6zDZ9eWhQx',
-    basePaymentLink: 'https://pay.ziina.com/ar/sharjha11/'
-};
+let firebaseSyncWired = false;
+const normalizeOrderStatus = window.normalizeOrderStatus || ((status) => status || 'pending');
 
 // ===== تهيئة =====
 function init() {
@@ -48,6 +44,7 @@ function init() {
     loadCart();
     renderProducts();
     setupLanguageButtons();
+    setupFirebaseSync();
 }
 
 function loadLang() {
@@ -65,6 +62,7 @@ function setupLanguageButtons() {
 
 // ===== تحميل المنتجات من localStorage =====
 function loadProducts() {
+    const hasLocalProducts = !!localStorage.getItem('cozProducts');
     try {
         const saved = localStorage.getItem('cozProducts');
         if (saved) {
@@ -77,6 +75,20 @@ function loadProducts() {
     } catch (e) {
         console.error('Error loading products:', e);
         initializeDefaultProducts();
+    }
+
+    const db = getDb();
+    if (db) {
+        db.ref('products').once('value').then((snapshot) => {
+            const remoteProducts = snapshot.val();
+            if (remoteProducts && typeof remoteProducts === 'object') {
+                products = remoteProducts;
+                localStorage.setItem('cozProducts', JSON.stringify(products));
+                renderProducts();
+            } else if (!hasLocalProducts) {
+                db.ref('products').set(products);
+            }
+        });
     }
 }
 
@@ -367,6 +379,50 @@ function loadCart() {
             cart = JSON.parse(saved);
             updateCartCount();
         }
+
+        function getDb() {
+            return window.getCozDatabase ? window.getCozDatabase() : null;
+        }
+
+        function setupFirebaseSync() {
+            if (firebaseSyncWired) return;
+            firebaseSyncWired = true;
+
+            const db = getDb();
+            if (!db) return;
+
+            db.ref('products').on('value', (snapshot) => {
+                const remoteProducts = snapshot.val();
+                if (remoteProducts && typeof remoteProducts === 'object') {
+                    products = remoteProducts;
+                    localStorage.setItem('cozProducts', JSON.stringify(products));
+                    renderProducts();
+                }
+            });
+
+            db.ref('orders').on('value', (snapshot) => {
+                const remoteOrders = snapshot.val() || {};
+                const normalizedOrders = Object.values(remoteOrders).map((order) => ({
+                    ...order,
+                    status: normalizeOrderStatus(order.status)
+                }));
+                localStorage.setItem('cozOrders', JSON.stringify(normalizedOrders));
+            });
+
+            db.ref('settings').on('value', (snapshot) => {
+                const settings = snapshot.val() || {};
+                if (typeof settings.ordersOpen === 'boolean') {
+                    localStorage.setItem('ordersOpen', String(settings.ordersOpen));
+                }
+                if (typeof settings.emailNotifications === 'boolean') {
+                    localStorage.setItem('emailNotifications', String(settings.emailNotifications));
+                }
+                if (settings.productsAvailability && typeof settings.productsAvailability === 'object') {
+                    localStorage.setItem('productsAvailability', JSON.stringify(settings.productsAvailability));
+                    renderProducts();
+                }
+            });
+        }
     } catch (e) {
         cart = [];
     }
@@ -489,12 +545,26 @@ function submitOrder(event) {
 function saveOrderToHistory(orderData) {
     try {
         const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
-        orders.unshift(orderData);
+        const normalizedOrder = {
+            ...orderData,
+            status: normalizeOrderStatus(orderData.status),
+            customer: orderData.customer || {
+                name: orderData.name || '',
+                phone: orderData.phone || '',
+                carNumber: orderData.carNumber || orderData.address || ''
+            }
+        };
+        orders.unshift(normalizedOrder);
         localStorage.setItem('cozOrders', JSON.stringify(orders));
+
+        const db = getDb();
+        if (db && normalizedOrder.orderId) {
+            db.ref('orders/' + normalizedOrder.orderId).set(normalizedOrder);
+        }
 
         // إرسال إشعار بريد إلكتروني إذا كانت الإشعارات مفعلة
         if (localStorage.getItem('emailNotifications') !== 'false') {
-            sendEmailNotification(orderData);
+            sendEmailNotification(normalizedOrder);
         }
     } catch (e) {
         console.error('Error saving order:', e);

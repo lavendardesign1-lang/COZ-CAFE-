@@ -382,10 +382,14 @@
         </div>
     </div>
 
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <script>
         let cart = [];
         let deliveryFee = 0;
-        let currentOrder = null;
+        const PHONE_REGEX = /^05\d{8}$/;
 
         // تحميل السلة عند فتح الصفحة
         window.addEventListener('DOMContentLoaded', () => {
@@ -451,7 +455,7 @@
         }
 
         // معالجة الدفع
-        function handlePayment(event) {
+        async function handlePayment(event) {
             event.preventDefault();
 
             const name = document.getElementById('customerName').value.trim();
@@ -460,6 +464,11 @@
 
             if (!name || !phone || !carNumber) {
                 showError('يرجى ملء جميع الحقول المطلوبة');
+                return;
+            }
+
+            if (!PHONE_REGEX.test(phone)) {
+                showError('رقم الهاتف يجب أن يكون 05xxxxxxxx (10 أرقام)');
                 return;
             }
 
@@ -475,40 +484,43 @@
                 return;
             }
 
-            createPayment(name, phone, carNumber);
+            await createPayment(name, phone, carNumber);
         }
 
         // إنشاء الطلب والدفع
-        function createPayment(name, phone, carNumber) {
+        async function createPayment(name, phone, carNumber) {
             showLoading(true);
             hideMessages();
 
             try {
                 const total = calculateTotal();
                 const orderId = 'ORD-' + Date.now();
+                const normalizeOrderStatus = window.normalizeOrderStatus || ((status) => status || 'pending');
 
-                currentOrder = {
+                const currentOrder = {
                     orderId: orderId,
                     name: name,
                     phone: phone,
                     carNumber: carNumber,
+                    customer: {
+                        name: name,
+                        phone: phone,
+                        carNumber: carNumber
+                    },
                     items: cart.map(i => ({ ...i })),
                     subtotal: cart.reduce((s, i) => s + (i.price * i.quantity), 0),
                     delivery: deliveryFee,
                     total: total,
-                    status: 'pending',
+                    status: normalizeOrderStatus('pending'),
                     timestamp: new Date().toISOString(),
-                    paymentMethod: 'cash'
+                    paymentMethod: 'ziina',
+                    paymentStatus: 'initiated'
                 };
 
-                // حفظ الطلب
-                saveOrder(currentOrder);
-
-                // محاكاة معالجة الدفع
-                setTimeout(() => {
-                    showLoading(false);
-                    processPaymentSuccess(orderId);
-                }, 1500);
+                await saveOrder(currentOrder);
+                localStorage.setItem('lastOrder', JSON.stringify(currentOrder));
+                localStorage.removeItem('cozCart');
+                redirectToZiina(currentOrder);
 
             } catch (error) {
                 showLoading(false);
@@ -517,21 +529,8 @@
             }
         }
 
-        // معالجة نجاح الدفع
-        function processPaymentSuccess(orderId) {
-            showSuccess('✅ تم استقبال الطلب بنجاح!');
-
-            // تنظيف السلة
-            localStorage.removeItem('cozCart');
-            
-            // الانتقال لصفحة التتبع بعد ثانيتين
-            setTimeout(() => {
-                window.location.href = 'tracking.html?order=' + orderId;
-            }, 2000);
-        }
-
         // حفظ الطلب
-        function saveOrder(orderData) {
+        async function saveOrder(orderData) {
             try {
                 const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
                 const index = orders.findIndex(o => o.orderId === orderData.orderId);
@@ -544,9 +543,40 @@
                 
                 localStorage.setItem('cozOrders', JSON.stringify(orders));
                 console.log('✅ Order saved:', orderData.orderId);
+
+                const db = window.getCozDatabase ? window.getCozDatabase() : null;
+                if (db) {
+                    await db.ref('orders/' + orderData.orderId).set(orderData);
+                }
             } catch (e) {
                 console.error('Error saving order:', e);
+                throw e;
             }
+        }
+
+        function redirectToZiina(orderData) {
+            const ziinaBase = (window.COZ_ZIINA_CONFIG && window.COZ_ZIINA_CONFIG.checkoutBaseUrl)
+                ? window.COZ_ZIINA_CONFIG.checkoutBaseUrl
+                : 'https://pay.ziina.com/ar/sharjha11/';
+
+            const successUrl = new URL('success.html', window.location.href);
+            successUrl.searchParams.set('order', orderData.orderId);
+
+            const cancelUrl = new URL('cancel.html', window.location.href);
+            cancelUrl.searchParams.set('order', orderData.orderId);
+
+            const params = new URLSearchParams({
+                amount: String(orderData.total),
+                currency: 'AED',
+                order_id: orderData.orderId,
+                customer_name: orderData.name,
+                customer_phone: orderData.phone,
+                success_url: successUrl.toString(),
+                cancel_url: cancelUrl.toString()
+            });
+
+            const separator = ziinaBase.includes('?') ? '&' : '?';
+            window.location.href = ziinaBase + separator + params.toString();
         }
 
         // حساب المجموع
@@ -597,9 +627,7 @@
 
         // العودة للخلف
         function goBack() {
-            if (confirm('هل تريد إلغاء العملية والعودة للسلة؟')) {
-                window.location.href = 'index.html';
-            }
+            window.location.href = 'index.html';
         }
 
         // التحقق من وجود سلة

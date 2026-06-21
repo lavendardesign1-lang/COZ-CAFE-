@@ -350,27 +350,31 @@
         </div>
     </div>
 
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <script>
         let currentOrder = null;
-        let refreshInterval = null;
-        let pollCount = 0;
+        let orderListener = null;
+        let localRefreshInterval = null;
+        const STATUS_FLOW = ['pending', 'approved', 'preparing', 'ready'];
+        const normalizeOrderStatus = window.normalizeOrderStatus || ((status) => STATUS_FLOW.includes(status) ? status : 'pending');
 
         window.addEventListener('DOMContentLoaded', () => {
             const orderId = getOrderIdFromURL();
             if (orderId) {
-                loadOrder(orderId);
-                // تحديث البيانات كل ثانية
-                refreshInterval = setInterval(() => {
-                    loadOrder(orderId);
-                    pollCount++;
-                }, 1000);
+                subscribeOrder(orderId);
             } else {
                 showEmptyState();
             }
         });
 
         window.addEventListener('beforeunload', () => {
-            if (refreshInterval) clearInterval(refreshInterval);
+            if (orderListener) {
+                orderListener.off();
+            }
+            if (localRefreshInterval) clearInterval(localRefreshInterval);
         });
 
         function getOrderIdFromURL() {
@@ -378,13 +382,36 @@
             return params.get('order');
         }
 
-        function loadOrder(orderId) {
+        function subscribeOrder(orderId) {
+            const db = window.getCozDatabase ? window.getCozDatabase() : null;
+
+            if (!db) {
+                loadOrderFromLocal(orderId);
+                localRefreshInterval = setInterval(() => loadOrderFromLocal(orderId), 2000);
+                return;
+            }
+
+            orderListener = db.ref('orders/' + orderId);
+            orderListener.on('value', (snapshot) => {
+                const order = snapshot.val();
+                if (order) {
+                    currentOrder = withNormalizedOrder(order);
+                    renderTracking();
+                    return;
+                }
+                loadOrderFromLocal(orderId);
+            }, () => {
+                loadOrderFromLocal(orderId);
+            });
+        }
+
+        function loadOrderFromLocal(orderId) {
             try {
                 const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
                 const order = orders.find(o => o.orderId === orderId);
                 
                 if (order) {
-                    currentOrder = order;
+                    currentOrder = withNormalizedOrder(order);
                     renderTracking();
                 } else {
                     showEmptyState();
@@ -395,10 +422,21 @@
             }
         }
 
+        function withNormalizedOrder(order) {
+            const customer = order.customer || {};
+            return {
+                ...order,
+                status: normalizeOrderStatus(order.status),
+                name: customer.name || order.name || '-',
+                phone: customer.phone || order.phone || '-',
+                carNumber: customer.carNumber || order.carNumber || '-'
+            };
+        }
+
         function renderTracking() {
             if (!currentOrder) return;
 
-            const status = currentOrder.status || 'pending';
+            const status = normalizeOrderStatus(currentOrder.status);
             const content = document.getElementById('trackingContent');
 
             let html = `
@@ -461,8 +499,7 @@
                 { key: 'pending', icon: '⏳', title: 'في الانتظار', desc: 'جاري مراجعة الطلب' },
                 { key: 'approved', icon: '✅', title: 'تم القبول', desc: 'تم قبول طلبك' },
                 { key: 'preparing', icon: '👨‍🍳', title: 'قيد الإعداد', desc: 'جاري تحضير الطلب' },
-                { key: 'ready', icon: '🚗', title: 'جاهز للتقديم', desc: 'طلبك جاهز الآن' },
-                { key: 'completed', icon: '✔️', title: 'مكتمل', desc: 'تم استلام الطلب' }
+                { key: 'ready', icon: '🚗', title: 'جاهز للتقديم', desc: 'طلبك جاهز الآن' }
             ];
 
             const statusIndex = statuses.findIndex(s => s.key === status);
@@ -491,7 +528,7 @@
         function getTimeForStatus(statusKey, currentStatus) {
             if (statusKey === currentStatus) {
                 return 'جاري الآن...';
-            } else if (['pending', 'approved', 'preparing', 'ready'].indexOf(statusKey) <= ['pending', 'approved', 'preparing', 'ready'].indexOf(currentStatus)) {
+            } else if (STATUS_FLOW.indexOf(statusKey) <= STATUS_FLOW.indexOf(currentStatus)) {
                 return 'تم';
             }
             return 'قادم...';
@@ -502,8 +539,7 @@
                 'pending': '⏳ طلبك في انتظار المراجعة. سيتم تحديثك قريباً',
                 'approved': '✅ تم قبول طلبك! جاري التحضير',
                 'preparing': '👨‍🍳 جاري تحضير طلبك الآن',
-                'ready': '🚗 طلبك جاهز! تفضل للاستلام',
-                'completed': '✔️ شكراً! تم استلام طلبك'
+                'ready': '🚗 طلبك جاهز! تفضل للاستلام'
             };
 
             return `
@@ -526,7 +562,7 @@
 
         function refreshTracking() {
             const orderId = getOrderIdFromURL();
-            if (orderId) loadOrder(orderId);
+            if (orderId) loadOrderFromLocal(orderId);
         }
 
         function goHome() {
