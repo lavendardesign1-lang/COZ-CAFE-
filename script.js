@@ -394,8 +394,9 @@ function goCheckout() {
         return;
     }
 
+    // إغلاق المودال والتوجيه لصفحة الدفع
     closeCartModal();
-    document.getElementById('checkout-modal').classList.add('active');
+    window.location.href = 'payment.html';
 }
 
 function closeCheckoutModal() {
