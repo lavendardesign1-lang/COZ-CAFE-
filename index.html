@@ -5,8 +5,119 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>COZ CAFÉ</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .success-banner {
+            display: none;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .success-banner h3 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .success-banner p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .success-banner .order-id {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .success-banner .banner-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .success-banner .btn-small {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .success-banner .btn-track {
+            background: white;
+            color: #28a745;
+        }
+
+        .success-banner .btn-track:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .success-banner .btn-new-order {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .success-banner .btn-new-order:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .success-banner .close-banner {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .success-banner {
+            position: relative;
+        }
+    </style>
 </head>
 <body>
+    <!-- رسالة النجاح -->
+    <div class="success-banner" id="successBanner">
+        <button class="close-banner" onclick="closeBanner()">&times;</button>
+        <h3>✅ تم الدفع بنجاح!</h3>
+        <p>شكراً لك على طلبك من COZ CAFE</p>
+        <div class="order-id">
+            رقم الطلب: <span id="successOrderId">-</span>
+        </div>
+        <p>جاري تحضير طلبك...</p>
+        <div class="banner-buttons">
+            <button class="btn-small btn-track" onclick="goToTracking()">📍 تابع الطلب</button>
+            <button class="btn-small btn-new-order" onclick="startNewOrder()">🛒 طلب جديد</button>
+        </div>
+    </div>
+
     <header>
         <div class="header-content">
             <div class="lang-switcher">
@@ -91,5 +202,58 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // التحقق من رسالة النجاح عند تحميل الصفحة
+        window.addEventListener('DOMContentLoaded', () => {
+            checkSuccessMessage();
+        });
+
+        function checkSuccessMessage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('order');
+
+            if (orderId) {
+                try {
+                    const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                    const order = orders.find(o => o.orderId === orderId);
+
+                    if (order) {
+                        // عرض رسالة النجاح
+                        document.getElementById('successOrderId').textContent = orderId;
+                        document.getElementById('successBanner').style.display = 'block';
+
+                        // تنظيف السلة بعد الدفع
+                        localStorage.removeItem('cozCart');
+                        updateCartBadge();
+
+                        // تنظيف URL
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                } catch (e) {
+                    console.error('Error checking order:', e);
+                }
+            }
+        }
+
+        function closeBanner() {
+            document.getElementById('successBanner').style.display = 'none';
+        }
+
+        function goToTracking() {
+            const orderId = document.getElementById('successOrderId').textContent;
+            if (orderId && orderId !== '-') {
+                window.location.href = 'tracking.html?order=' + orderId;
+            }
+        }
+
+        function startNewOrder() {
+            closeBanner();
+            // تنظيف السلة
+            localStorage.removeItem('cozCart');
+            updateCartBadge();
+            // الذهاب لقائمة المنتجات
+            goProducts();
+        }
+    </script>
 </body>
 </html>
