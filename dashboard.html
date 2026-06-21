@@ -23,7 +23,7 @@
         }
 
         .sidebar {
-            width: 80px;
+            width: 60px;
             background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
             color: white;
             padding: 15px;
@@ -37,17 +37,18 @@
         }
 
         .sidebar:hover {
-            width: 250px;
+            width: 180px;
         }
 
         .sidebar h2 {
             margin-bottom: 20px;
-            font-size: 16px;
+            font-size: 14px;
             text-align: center;
             border-bottom: 2px solid rgba(255, 255, 255, 0.3);
             padding-bottom: 10px;
             opacity: 0;
             transition: opacity 0.3s ease;
+            white-space: nowrap;
         }
 
         .sidebar:hover h2 {
@@ -74,12 +75,17 @@
             white-space: nowrap;
             overflow: hidden;
             font-size: 12px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .sidebar:hover a {
             text-align: right;
             padding: 12px 15px;
             font-size: 14px;
+            justify-content: flex-start;
         }
 
         .sidebar a:hover,
@@ -89,14 +95,15 @@
         }
 
         .main-content {
-            margin-right: 80px;
+            margin-right: 60px;
             flex: 1;
             padding: 30px;
             transition: margin-right 0.3s ease;
+            overflow-y: auto;
         }
 
         .sidebar:hover ~ .main-content {
-            margin-right: 250px;
+            margin-right: 180px;
         }
 
         .header {
@@ -319,6 +326,7 @@
             font-weight: 600;
             transition: all 0.3s ease;
             margin-top: 10px;
+            width: 100%;
         }
 
         .btn-primary {
@@ -445,11 +453,19 @@
 
         @media (max-width: 768px) {
             .sidebar {
-                width: 60px;
+                width: 50px;
             }
 
             .main-content {
-                margin-right: 60px;
+                margin-right: 50px;
+            }
+
+            .sidebar:hover {
+                width: 150px;
+            }
+
+            .sidebar:hover ~ .main-content {
+                margin-right: 150px;
             }
 
             .header {
@@ -743,10 +759,9 @@
                         <span class="status-indicator ${available ? 'available' : 'unavailable'}"></span>
                         <span>${available ? 'متوفر' : 'غير متوفر'}</span>
                     </div>
-                    <button class="btn ${available ? 'btn-danger' : 'btn-disabled'}" 
-                            onclick="${available ? `toggleProduct(${product.id})` : 'return false'}"
-                            ${available ? '' : 'disabled'}>
-                        ${available ? 'عدم التوفر' : '+ Add'}
+                    <button class="btn ${available ? 'btn-danger' : 'btn-success'}" 
+                            onclick="toggleProduct(${product.id})">
+                        ${available ? 'عدم التوفر' : 'توفر'}
                     </button>
                 `;
                 grid.appendChild(item);
