@@ -149,7 +149,7 @@ function renderProducts() {
                 const itemName = currentLang === 'ar' ? item.nameAr : item.nameEn;
                 const btnText = available 
                     ? (currentLang === 'ar' ? '+ أضف' : '+ Add')
-                    : (currentLang === 'ar' ? '+ Add' : '+ Add');
+                    : (currentLang === 'ar' ? 'غير متوفر' : 'Unavailable');
                 
                 card.innerHTML = `
                     <img src="${item.image}" alt="${itemName}" class="v60-flavor-img"
@@ -216,7 +216,7 @@ function buildProductRow(item, catKey) {
 
     const btnText = available 
         ? (currentLang === 'ar' ? '+ أضف' : '+ Add')
-        : (currentLang === 'ar' ? '+ Add' : '+ Add');
+        : (currentLang === 'ar' ? 'غير متوفر' : 'Unavailable');
 
     return `
         <div class="product-row" style="opacity: ${available ? '1' : '0.5'};">
