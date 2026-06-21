@@ -480,10 +480,14 @@
                     paymentMethod: 'ziina'
                 };
 
-                // حفظ الطلب مؤقتاً
-                localStorage.setItem('tempOrder', JSON.stringify(orderData));
+                // حفظ الطلب في cozOrders أولاً (مباشرة قبل الدفع)
+                saveOrder(orderData);
 
-                // إنشاء رابط الدفع
+                // حفظ الطلب مؤقتاً أيضاً
+                localStorage.setItem('tempOrder', JSON.stringify(orderData));
+                localStorage.setItem('lastOrder', JSON.stringify(orderData));
+
+                // إنشاء رابط الدفع مع redirect_url
                 const paymentLink = createPaymentLink(orderData);
 
                 // إعادة التوجيه لـ Ziina
@@ -513,13 +517,13 @@
             return ZIINA_BASE_URL + '?' + params.toString();
         }
 
-        // حفظ الطلب
+        // حفظ الطلب في cozOrders
         function saveOrder(orderData) {
             try {
                 const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
                 orders.unshift(orderData);
                 localStorage.setItem('cozOrders', JSON.stringify(orders));
-                localStorage.setItem('lastOrder', JSON.stringify(orderData));
+                console.log('✅ Order saved to cozOrders:', orderData.orderId);
             } catch (e) {
                 console.error('Error saving order:', e);
             }
