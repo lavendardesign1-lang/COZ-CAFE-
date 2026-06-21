@@ -149,7 +149,7 @@ function renderProducts() {
                 const itemName = currentLang === 'ar' ? item.nameAr : item.nameEn;
                 const btnText = available 
                     ? (currentLang === 'ar' ? '+ أضف' : '+ Add')
-                    : (currentLang === 'ar' ? '❌ غير متوفر' : '❌ Unavailable');
+                    : (currentLang === 'ar' ? '+ Add' : '+ Add');
                 
                 card.innerHTML = `
                     <img src="${item.image}" alt="${itemName}" class="v60-flavor-img"
@@ -159,7 +159,7 @@ function renderProducts() {
                         <span class="v60-flavor-price">${item.price} AED</span>
                     </div>
                     <div class="v60-flavor-actions">
-                        <input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10" ${available ? '' : 'disabled'}>
+                        ${available ? `<input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">` : ''}
                         <button class="add-btn ${available ? '' : 'unavailable'}" 
                                 onclick="${available ? `addToCart(${item.id}, '${catKey}')` : 'return false'}"
                                 ${available ? '' : 'disabled'}
@@ -216,7 +216,7 @@ function buildProductRow(item, catKey) {
 
     const btnText = available 
         ? (currentLang === 'ar' ? '+ أضف' : '+ Add')
-        : (currentLang === 'ar' ? '❌ غير متوفر' : '❌ Unavailable');
+        : (currentLang === 'ar' ? '+ Add' : '+ Add');
 
     return `
         <div class="product-row" style="opacity: ${available ? '1' : '0.5'};">
@@ -228,7 +228,7 @@ function buildProductRow(item, catKey) {
             </div>
             <div class="product-row-right">
                 <span class="price-tag">${item.price} AED</span>
-                <input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10" ${available ? '' : 'disabled'}>
+                ${available ? `<input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">` : ''}
                 <button class="add-btn ${available ? '' : 'unavailable'}" 
                         onclick="${available ? `addToCart(${item.id}, '${catKey}')` : 'return false'}"
                         ${available ? '' : 'disabled'}
@@ -244,7 +244,6 @@ function buildProductRow(item, catKey) {
 function addToCart(itemId, catKey) {
     // التحقق من التوفر قبل الإضافة
     if (!isProductAvailable(itemId)) {
-        alert(currentLang === 'ar' ? 'هذا المنتج غير متوفر حالياً' : 'This product is not available');
         return;
     }
 
