@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نموذج الدفع - COZ CAFE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .payment-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .payment-header {
+            background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .payment-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .payment-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-section h2 {
+            color: #8B6914;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #D2B48C;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #D2B48C;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #8B6914;
+            box-shadow: 0 0 8px rgba(139, 105, 20, 0.3);
+            background: #fffbf0;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .order-summary {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            border-right: 4px solid #D2B48C;
+        }
+
+        .order-summary h2 {
+            color: #8B6914;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #D2B48C;
+            padding-bottom: 10px;
+        }
+
+        .cart-items {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-right: 10px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .cart-item-qty {
+            color: #666;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .cart-item-price {
+            color: #8B6914;
+            font-weight: 700;
+            font-size: 14px;
+            min-width: 60px;
+            text-align: left;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .order-total {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-top: 2px solid #D2B48C;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .total-row.final {
+            font-size: 18px;
+            font-weight: 700;
+            color: #8B6914;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .payment-methods {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .payment-methods h3 {
+            color: #8B6914;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .method-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .method-option:hover {
+            border-color: #D2B48C;
+        }
+
+        .method-option input {
+            margin-left: 10px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        .method-option label {
+            cursor: pointer;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .method-icon {
+            font-size: 18px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel {
+            background: #ccc;
+            color: #333;
+        }
+
+        .btn-cancel:hover {
+            background: #aaa;
+        }
+
+        .btn-pay {
+            background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
+            color: white;
+            font-size: 18px;
+        }
+
+        .btn-pay:hover {
+            background: linear-gradient(135deg, #654321 0%, #C19A6B 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 105, 20, 0.4);
+        }
+
+        .btn-pay:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border-right: 4px solid #f5c6cb;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border-right: 4px solid #c3e6cb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #8B6914;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .payment-content {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-header h1 {
+                font-size: 22px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .cart-items {
+                max-height: 200px;
+            }
+        }
+
+        .info-box {
+            background: #fffbf0;
+            padding: 12px;
+            border-radius: 8px;
+            border-right: 3px solid #D2B48C;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: #8B6914;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="payment-header">
+            <h1>☕ نموذج الدفع</h1>
+            <p>أكمل عملية الشراء بأمان</p>
+        </div>
+
+        <div class="payment-content">
+            <!-- نموذج المعلومات -->
+            <div class="form-section">
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+                <div class="loading" id="loadingSpinner">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 15px; color: #666;">جاري معالجة الدفع...</p>
+                </div>
+
+                <form id="paymentForm" onsubmit="handlePayment(event)">
+                    <h2>📋 معلومات الطلب</h2>
+
+                    <div class="form-group">
+                        <label>الاسم الكامل *</label>
+                        <input type="text" id="customerName" placeholder="أحمد محمد" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>رقم الهاتف *</label>
+                        <input type="tel" id="customerPhone" placeholder="0501234567" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>البريد الإلكتروني</label>
+                        <input type="email" id="customerEmail" placeholder="your@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>العنوان *</label>
+                        <textarea id="customerAddress" placeholder="الشارع، المدينة..." required></textarea>
+                    </div>
+
+                    <div class="info-box">
+                        <strong>⚠️ ملاحظة:</strong> تأكد من صحة بيانات الطلب قبل المتابعة
+                    </div>
+                </form>
+            </div>
+
+            <!-- ملخص الطلب -->
+            <div class="order-summary">
+                <h2>🛒 ملخص الطلب</h2>
+
+                <div class="cart-items" id="cartItemsList">
+                    <div class="empty-cart">السلة فارغة</div>
+                </div>
+
+                <div class="order-total">
+                    <div class="total-row">
+                        <span>السعر:</span>
+                        <span id="subtotal">0 AED</span>
+                    </div>
+                    <div class="total-row">
+                        <span>التوصيل:</span>
+                        <span id="delivery">0 AED</span>
+                    </div>
+                    <div class="total-row final">
+                        <span>المجموع:</span>
+                        <span id="totalPrice">0 AED</span>
+                    </div>
+                </div>
+
+                <div class="payment-methods">
+                    <h3>💳 طريقة الدفع</h3>
+                    <div class="method-option">
+                        <label>
+                            <input type="radio" name="paymentMethod" value="ziina" checked>
+                            <span class="method-icon">💳</span>
+                            <span>Ziina - بطاقة ائتمان</span>
+                        </label>
+                    </div>
+                    <div class="method-option">
+                        <label>
+                            <input type="radio" name="paymentMethod" value="cash">
+                            <span class="method-icon">💵</span>
+                            <span>الدفع عند الاستلام</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-cancel" onclick="goBack()">إلغاء</button>
+                    <button type="submit" form="paymentForm" class="btn btn-pay" id="payBtn">ادفع الآن</button>
+                </div>
+
+                <div class="info-box" style="margin-top: 15px;">
+                    <strong>✓ آمن تماماً:</strong> جميع المعاملات محمية بأعلى معايير الأمان
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ZIINA_API_KEY = '8OKX7oHy/bm5O3fVJTeLQIvqM8P9unWyUxtBoqtrFFmaZbrPrEu+zP6zDZ9eWhQx';
+        const ZIINA_BASE_URL = 'https://pay.ziina.com/ar/sharjha11/';
+
+        let cart = [];
+        let deliveryFee = 0;
+
+        // تحميل السلة عند فتح الصفحة
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCart();
+            renderCart();
+        });
+
+        // تحميل السلة من localStorage
+        function loadCart() {
+            try {
+                cart = JSON.parse(localStorage.getItem('cozCart')) || [];
+            } catch (e) {
+                cart = [];
+            }
+        }
+
+        // عرض السلة والمجموع
+        function renderCart() {
+            const cartList = document.getElementById('cartItemsList');
+            const subtotalEl = document.getElementById('subtotal');
+            const totalEl = document.getElementById('totalPrice');
+
+            if (cart.length === 0) {
+                cartList.innerHTML = '<div class="empty-cart">السلة فارغة 🛒</div>';
+                subtotalEl.textContent = '0 AED';
+                totalEl.textContent = '0 AED';
+                document.getElementById('payBtn').disabled = true;
+                return;
+            }
+
+            let html = '';
+            let subtotal = 0;
+
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                html += `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-qty">${item.quantity} × ${item.price} AED</div>
+                        </div>
+                        <div class="cart-item-price">${itemTotal} AED</div>
+                    </div>
+                `;
+            });
+
+            cartList.innerHTML = html;
+            subtotalEl.textContent = subtotal + ' AED';
+            
+            const total = subtotal + deliveryFee;
+            totalEl.textContent = total + ' AED';
+            
+            document.getElementById('payBtn').disabled = false;
+        }
+
+        // معالجة الدفع
+        async function handlePayment(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const email = document.getElementById('customerEmail').value.trim();
+            const address = document.getElementById('customerAddress').value.trim();
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+            // التحقق من البيانات
+            if (!name || !phone || !address) {
+                showError('يرجى ملء جميع الحقول المطلوبة');
+                return;
+            }
+
+            if (cart.length === 0) {
+                showError('السلة فارغة!');
+                return;
+            }
+
+            // إذا كان الدفع الإلكتروني
+            if (paymentMethod === 'ziina') {
+                await processZiinaPayment(name, phone, email, address);
+            } else {
+                // الدفع عند الاستلام
+                processCashPayment(name, phone, email, address);
+            }
+        }
+
+        // معالجة دفع Ziina
+        async function processZiinaPayment(name, phone, email, address) {
+            showLoading(true);
+            hideMessages();
+
+            try {
+                const total = calculateTotal();
+                const orderId = 'ORD-' + Date.now();
+
+                // بيانات الطلب
+                const orderData = {
+                    orderId: orderId,
+                    name: name,
+                    phone: phone,
+                    email: email,
+                    address: address,
+                    items: cart.map(i => ({ ...i })),
+                    subtotal: cart.reduce((s, i) => s + (i.price * i.quantity), 0),
+                    delivery: deliveryFee,
+                    total: total,
+                    status: 'pending',
+                    timestamp: new Date().toISOString(),
+                    paymentMethod: 'ziina'
+                };
+
+                // حفظ الطلب مؤقتاً
+                localStorage.setItem('tempOrder', JSON.stringify(orderData));
+
+                // إنشاء رابط الدفع
+                const paymentLink = createPaymentLink(orderData);
+
+                // إعادة التوجيه لـ Ziina
+                showSuccess('جاري التوجيه لصفحة الدفع...');
+                setTimeout(() => {
+                    window.location.href = paymentLink;
+                }, 1000);
+
+            } catch (error) {
+                showLoading(false);
+                showError('حدث خطأ: ' + error.message);
+                console.error('Payment error:', error);
+            }
+        }
+
+        // إنشاء رابط الدفع
+        function createPaymentLink(orderData) {
+            const params = new URLSearchParams({
+                amount: orderData.total * 100, // بالفلس
+                customer_name: orderData.name,
+                customer_phone: orderData.phone,
+                customer_email: orderData.email || '',
+                order_id: orderData.orderId,
+                description: 'COZ CAFE Order',
+                redirect_url: window.location.origin + window.location.pathname.replace('payment.html', 'success.html') + '?order=' + orderData.orderId
+            });
+
+            return ZIINA_BASE_URL + '?' + params.toString();
+        }
+
+        // معالجة الدفع عند الاستلام
+        function processCashPayment(name, phone, email, address) {
+            showLoading(true);
+
+            try {
+                const orderId = 'ORD-' + Date.now();
+                const total = calculateTotal();
+
+                const orderData = {
+                    orderId: orderId,
+                    name: name,
+                    phone: phone,
+                    email: email,
+                    address: address,
+                    items: cart.map(i => ({ ...i })),
+                    subtotal: cart.reduce((s, i) => s + (i.price * i.quantity), 0),
+                    delivery: deliveryFee,
+                    total: total,
+                    status: 'pending',
+                    timestamp: new Date().toISOString(),
+                    paymentMethod: 'cash'
+                };
+
+                // حفظ الطلب
+                saveOrder(orderData);
+
+                // إفراغ السلة
+                localStorage.removeItem('cozCart');
+
+                // إعادة التوجيه لصفحة النجاح
+                showSuccess('✓ تم تأكيد الطلب! جاري التوجيه...');
+                setTimeout(() => {
+                    window.location.href = 'success.html?order=' + orderId;
+                }, 1500);
+
+            } catch (error) {
+                showLoading(false);
+                showError('حدث خطأ: ' + error.message);
+            }
+        }
+
+        // حفظ الطلب
+        function saveOrder(orderData) {
+            try {
+                const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                orders.unshift(orderData);
+                localStorage.setItem('cozOrders', JSON.stringify(orders));
+                localStorage.setItem('lastOrder', JSON.stringify(orderData));
+            } catch (e) {
+                console.error('Error saving order:', e);
+            }
+        }
+
+        // حساب المجموع
+        function calculateTotal() {
+            const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+            return subtotal + deliveryFee;
+        }
+
+        // إظهار رسالة خطأ
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // إظهار رسالة نجاح
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMessage');
+            successEl.textContent = message;
+            successEl.style.display = 'block';
+        }
+
+        // إخفاء الرسائل
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // عرض/إخفاء التحميل
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+            document.getElementById('payBtn').disabled = show;
+        }
+
+        // العودة للخلف
+        function goBack() {
+            if (confirm('هل تريد إلغاء العملية والعودة للسلة؟')) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // التحقق من وجود سلة
+        window.addEventListener('load', () => {
+            if (cart.length === 0) {
+                showError('السلة فارغة! سيتم التوجيه للموقع...');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
