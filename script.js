@@ -352,9 +352,18 @@ function goCheckout() {
         alert(currentLang === 'ar' ? 'السلة فارغة!' : 'Cart is empty!'); 
         return; 
     }
+
+    // التحقق من فتح الطلبات
+    const ordersOpen = localStorage.getItem('ordersOpen') !== 'false';
+    if (!ordersOpen) {
+        alert(currentLang === 'ar' ? 'الطلبات مغلقة حالياً' : 'Orders are closed');
+        return;
+    }
+
     closeCartModal();
     document.getElementById('checkout-modal').classList.add('active');
 }
+
 function closeCheckoutModal() {
     document.getElementById('checkout-modal').classList.remove('active');
 }
@@ -414,8 +423,8 @@ function submitOrder(event) {
     saveCart();
     updateCartCount();
 
-    // الانتقال مباشرة إلى بوابة الدفع على Ziina مع المبلغ الديناميكي
-    redirectToZiinaPayment(orderId, total, name, phone);
+    // الانتقال إلى صفحة النجاح
+    window.location.href = 'success.html';
 }
 
 // ===== حفظ الطلب في سجل الطلبات =====
@@ -424,23 +433,23 @@ function saveOrderToHistory(orderData) {
         const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
         orders.unshift(orderData);
         localStorage.setItem('cozOrders', JSON.stringify(orders));
+
+        // إرسال إشعار بريد إلكتروني إذا كانت الإشعارات مفعلة
+        if (localStorage.getItem('emailNotifications') !== 'false') {
+            sendEmailNotification(orderData);
+        }
     } catch (e) {
         console.error('Error saving order:', e);
     }
 }
 
-// ===== دالة الانتقال إلى زينه للدفع مع المبلغ الديناميكي =====
-function redirectToZiinaPayment(orderId, amount, customerName, customerPhone) {
-    // إنشاء معرف فريد للدفع بناءً على رقم الطلب والمبلغ
-    const dynamicId = orderId + '-' + amount;
+// ===== إرسال إشعار بريدي =====
+function sendEmailNotification(orderData) {
+    // ملاحظة: هذا يتطلب backend أو خدمة مثل Firebase
+    console.log('📧 إشعار جديد:', orderData);
     
-    // بناء رابط الدفع الديناميكي
-    let paymentUrl = ZIINA_CONFIG.basePaymentLink + encodeURIComponent(dynamicId);
-    paymentUrl += '?amount=' + encodeURIComponent(amount);
-    paymentUrl += '&source=app';
-    
-    // الانتقال إلى رابط الدفع
-    window.location.href = paymentUrl;
+    // يمكن إضافة رابط للإشعارات هنا لاحقاً
+    // مثل emailjs.send() أو Firebase function
 }
 
 document.addEventListener('DOMContentLoaded', init);
