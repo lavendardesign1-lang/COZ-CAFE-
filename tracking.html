@@ -433,16 +433,39 @@
             };
         }
 
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         function renderTracking() {
             if (!currentOrder) return;
 
             const status = normalizeOrderStatus(currentOrder.status);
             const content = document.getElementById('trackingContent');
+            const safeOrderId = escapeHtml(currentOrder.orderId);
+            const safeName = escapeHtml(currentOrder.name);
+            const safePhone = escapeHtml(currentOrder.phone);
+            const safeCarNumber = escapeHtml(currentOrder.carNumber || 'N/A');
+            const safeTime = escapeHtml(new Date(currentOrder.timestamp).toLocaleString('ar-SA'));
+            const safeTotal = Number(currentOrder.total || 0);
+            const safeItemsHtml = currentOrder.items
+                ? currentOrder.items.map(item => `
+                        <div class="item">
+                            <span class="item-name">${escapeHtml(item.name)} × ${Number(item.quantity || 0)}</span>
+                            <span class="item-price">${Number(item.price || 0) * Number(item.quantity || 0)} AED</span>
+                        </div>
+                    `).join('')
+                : '<p style="color: #999;">لا توجد منتجات</p>';
 
             let html = `
                 <div class="order-number">
                     <label>رقم الطلب</label>
-                    <div class="id">${currentOrder.orderId}</div>
+                    <div class="id">${safeOrderId}</div>
                 </div>
 
                 <div class="timeline">
@@ -453,34 +476,29 @@
                     <h3>📋 معلومات الطلب</h3>
                     <div class="detail-row">
                         <span class="detail-label">الاسم:</span>
-                        <span class="detail-value">${currentOrder.name}</span>
+                        <span class="detail-value">${safeName}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">رقم الهاتف:</span>
-                        <span class="detail-value">${currentOrder.phone}</span>
+                        <span class="detail-value">${safePhone}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">رقم السيارة:</span>
-                        <span class="detail-value">${currentOrder.carNumber || 'N/A'}</span>
+                        <span class="detail-value">${safeCarNumber}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">التاريخ والوقت:</span>
-                        <span class="detail-value">${new Date(currentOrder.timestamp).toLocaleString('ar-SA')}</span>
+                        <span class="detail-value">${safeTime}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">المجموع:</span>
-                        <span class="detail-value" style="font-size: 18px; color: #8B6914;">${currentOrder.total} AED</span>
+                        <span class="detail-value" style="font-size: 18px; color: #8B6914;">${safeTotal} AED</span>
                     </div>
                 </div>
 
                 <div class="items-list">
                     <h3>📦 المنتجات</h3>
-                    ${currentOrder.items ? currentOrder.items.map(item => `
-                        <div class="item">
-                            <span class="item-name">${item.name} × ${item.quantity}</span>
-                            <span class="item-price">${item.price * item.quantity} AED</span>
-                        </div>
-                    `).join('') : '<p style="color: #999;">لا توجد منتجات</p>'}
+                    ${safeItemsHtml}
                 </div>
 
                 <div class="action-buttons">
