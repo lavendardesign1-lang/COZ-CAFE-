@@ -319,6 +319,20 @@
                 flex-direction: column;
             }
         }
+
+        .status-update-info {
+            background: #e7f3ff;
+            border-right: 3px solid #17a2b8;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #0c5460;
+        }
+
+        .status-update-info strong {
+            color: #17a2b8;
+        }
     </style>
 </head>
 <body>
@@ -339,15 +353,17 @@
     <script>
         let currentOrder = null;
         let refreshInterval = null;
+        let pollCount = 0;
 
         window.addEventListener('DOMContentLoaded', () => {
             const orderId = getOrderIdFromURL();
             if (orderId) {
                 loadOrder(orderId);
-                // تحديث البيانات كل 3 ثوانٍ
+                // تحديث البيانات كل ثانية
                 refreshInterval = setInterval(() => {
                     loadOrder(orderId);
-                }, 3000);
+                    pollCount++;
+                }, 1000);
             } else {
                 showEmptyState();
             }
@@ -433,6 +449,8 @@
                     <button class="btn btn-home" onclick="goHome()">🏠 الرئيسية</button>
                     <button class="btn btn-refresh" onclick="refreshTracking()">🔄 تحديث</button>
                 </div>
+
+                ${getStatusUpdateInfo(status)}
             `;
 
             content.innerHTML = html;
@@ -463,18 +481,36 @@
                         <div class="timeline-content">
                             <h3>${s.title}</h3>
                             <p>${s.desc}</p>
-                            <div class="time">${getTimeForStatus(s.key)}</div>
+                            <div class="time">${getTimeForStatus(s.key, status)}</div>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        function getTimeForStatus(status) {
-            if (status === 'pending') {
-                return 'في الانتظار...';
+        function getTimeForStatus(statusKey, currentStatus) {
+            if (statusKey === currentStatus) {
+                return 'جاري الآن...';
+            } else if (['pending', 'approved', 'preparing', 'ready'].indexOf(statusKey) <= ['pending', 'approved', 'preparing', 'ready'].indexOf(currentStatus)) {
+                return 'تم';
             }
-            return 'تم';
+            return 'قادم...';
+        }
+
+        function getStatusUpdateInfo(status) {
+            const statusMessages = {
+                'pending': '⏳ طلبك في انتظار المراجعة. سيتم تحديثك قريباً',
+                'approved': '✅ تم قبول طلبك! جاري التحضير',
+                'preparing': '👨‍🍳 جاري تحضير طلبك الآن',
+                'ready': '🚗 طلبك جاهز! تفضل للاستلام',
+                'completed': '✔️ شكراً! تم استلام طلبك'
+            };
+
+            return `
+                <div class="status-update-info">
+                    <strong>📢 آخر تحديث:</strong> ${statusMessages[status] || 'جاري معالجة الطلب'}
+                </div>
+            `;
         }
 
         function showEmptyState() {
