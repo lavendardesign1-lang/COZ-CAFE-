@@ -221,16 +221,6 @@
             transform: none;
         }
 
-        .btn-check {
-            background: #17a2b8;
-            color: white;
-            margin-top: 10px;
-        }
-
-        .btn-check:hover {
-            background: #138496;
-        }
-
         .error-message {
             background: #f8d7da;
             color: #721c24;
@@ -375,17 +365,12 @@
                     <button type="submit" form="paymentForm" class="btn btn-pay" id="payBtn">💳 ادفع الآن</button>
                 </div>
 
-                <!-- زر تحقق من الدفع -->
-                <button type="button" class="btn btn-check" id="checkPaymentBtn" onclick="checkPaymentStatus()" style="display: none;">
-                    ✓ تحقق من الدفع والعودة
-                </button>
-
                 <div class="info-box" style="margin-top: 15px;">
                     <strong>✓ آمن تماماً:</strong> جميع المعاملات محمية بأعلى معايير الأمان
                 </div>
 
                 <div class="info-box" style="margin-top: 10px; background: #e7f3ff; border-right-color: #17a2b8;">
-                    <strong>💡 ملاحظة:</strong> صفحة الدفع ستفتح في تبويب جديد. بعد الانتهاء من الدفع، اضغط على "تحقق من الدفع والعودة"
+                    <strong>💡 ملاحظة:</strong> صفحة الدفع ستفتح في تبويب جديد. بعد الانتهاء من الدفع، ستعود لموقعنا تلقائياً
                 </div>
             </div>
         </div>
@@ -395,7 +380,6 @@
         let cart = [];
         let deliveryFee = 0;
         let currentOrder = null;
-        let paymentWindowOpened = false;
 
         // تحميل السلة عند فتح الصفحة
         window.addEventListener('DOMContentLoaded', () => {
@@ -511,14 +495,15 @@
                 // فتح Ziina في تبويب جديد
                 setTimeout(() => {
                     window.open(paymentLink, '_blank');
-                    paymentWindowOpened = true;
                     
-                    // إظهار زر التحقق من الدفع
+                    // إظهار رسالة النجاح
                     showLoading(false);
-                    document.getElementById('checkPaymentBtn').style.display = 'block';
-                    document.getElementById('payBtn').style.display = 'none';
+                    showSuccess('✓ تم فتح صفحة الدفع في تبويب جديد. بعد الدفع، ستعود لموقعنا تلقائياً');
                     
-                    showSuccess('✓ تم فتح صفحة الدفع في تبويب جديد. بعد الانتهاء، اضغط على "تحقق من الدفع والعودة"');
+                    // إخفاء النموذج بعد الضغط
+                    document.getElementById('paymentForm').style.display = 'none';
+                    document.querySelector('.button-group').style.display = 'none';
+                    
                 }, 500);
 
             } catch (error) {
@@ -530,8 +515,8 @@
 
         // إنشاء رابط الدفع
         function createPaymentLink(orderData) {
-            // الرابط الكامل لصفحة النجاح
-            const redirectUrl = window.location.origin + window.location.pathname.replace('payment.html', 'success.html') + '?order=' + orderData.orderId;
+            // الرابط الكامل للعودة للموقع الرئيسي
+            const redirectUrl = window.location.origin + window.location.pathname.replace('payment.html', 'index.html') + '?order=' + orderData.orderId;
             
             const params = new URLSearchParams({
                 amount: orderData.total,
@@ -543,29 +528,6 @@
             });
 
             return 'https://pay.ziina.com/ar/sharjha11/?' + params.toString();
-        }
-
-        // التحقق من حالة الدفع والعودة
-        function checkPaymentStatus() {
-            if (!currentOrder) {
-                showError('لم يتم العثور على بيانات الطلب');
-                return;
-            }
-
-            try {
-                const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
-                const order = orders.find(o => o.orderId === currentOrder.orderId);
-
-                if (order) {
-                    // الطلب موجود، انتقل لصفحة التتبع
-                    localStorage.setItem('lastOrder', JSON.stringify(order));
-                    window.location.href = 'tracking.html?order=' + order.orderId;
-                } else {
-                    showError('لم يتم العثور على الطلب. تأكد من اكتمال الدفع');
-                }
-            } catch (e) {
-                showError('حدث خطأ: ' + e.message);
-            }
         }
 
         // حفظ الطلب
