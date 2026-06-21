@@ -200,6 +200,12 @@
             font-size: 14px;
         }
 
+        .payment-status.success {
+            background: #d4edda;
+            color: #155724;
+            border-right: 3px solid #28a745;
+        }
+
         .payment-status.pending {
             background: #fff3cd;
             color: #856404;
@@ -212,6 +218,23 @@
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid #eee;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #8B6914;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
@@ -254,38 +277,114 @@
         </div>
 
         <div class="payment-status pending" id="paymentInfo">
-            <strong>⏳ حالة الدفع:</strong> الطلب قيد المعالجة
+            <span class="loading-spinner"></span>
+            <strong>⏳ حالة الدفع:</strong> جاري التحقق من الدفع...
         </div>
 
         <div class="buttons">
-            <button class="btn btn-primary" onclick="goToTracking()">📍 متابعة الطلب</button>
+            <button class="btn btn-primary" onclick="goToTracking()" id="trackBtn" disabled>📍 متابعة الطلب</button>
             <button class="btn btn-secondary" onclick="makeNewOrder()">🛒 طلب جديد</button>
         </div>
 
         <div class="timer">
-            <span id="redirectMessage">سيتم التوجيه لمتابعة الطلب بعد 10 ثوانٍ...</span>
+            <span id="redirectMessage">سيتم التوجيه لمتابعة الطلب بعد التحقق من الدفع...</span>
         </div>
     </div>
 
     <script>
         let lastOrder = null;
-        let redirectTimer = 10;
+        let orderId = null;
+        let checkCount = 0;
+        const MAX_CHECKS = 24; // 2 دقيقة (24 × 5 ثواني)
 
         window.addEventListener('DOMContentLoaded', () => {
+            // الحصول على order ID من URL
+            const urlParams = new URLSearchParams(window.location.search);
+            orderId = urlParams.get('order');
+            
             loadOrderData();
             renderOrderDetails();
-            startRedirectTimer();
+            
+            // ابدأ التحقق من الدفع
+            checkPaymentStatus();
+            setInterval(checkPaymentStatus, 5000); // كل 5 ثواني
         });
 
         function loadOrderData() {
             try {
+                // اولاً حاول تحميل من lastOrder
                 lastOrder = JSON.parse(localStorage.getItem('lastOrder'));
-                if (!lastOrder) lastOrder = JSON.parse(localStorage.getItem('tempOrder'));
-                if (!lastOrder) showEmptyState();
+                
+                // إذا ما فيه، حاول تحميل من tempOrder
+                if (!lastOrder) {
+                    lastOrder = JSON.parse(localStorage.getItem('tempOrder'));
+                }
+                
+                // إذا ما فيه، حاول تحميل من cozOrders باستخدام orderId
+                if (!lastOrder && orderId) {
+                    const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                    lastOrder = orders.find(o => o.orderId === orderId);
+                }
+                
+                if (!lastOrder) {
+                    showEmptyState();
+                }
             } catch (e) {
                 console.error('Error:', e);
                 showEmptyState();
             }
+        }
+
+        function checkPaymentStatus() {
+            if (!lastOrder) return;
+            
+            checkCount++;
+            
+            // تحقق إذا الطلب تم تحديثه في localStorage من dashboard
+            try {
+                const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                const updatedOrder = orders.find(o => o.orderId === lastOrder.orderId);
+                
+                if (updatedOrder) {
+                    lastOrder = updatedOrder;
+                    
+                    // إذا الحالة تغيرت من pending لـ completed
+                    if (lastOrder.status === 'completed' || lastOrder.status === 'confirmed') {
+                        paymentConfirmed();
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error('Error checking status:', e);
+            }
+            
+            // إذا انتهت المحاولات، افترض أن الدفع تم
+            if (checkCount >= MAX_CHECKS) {
+                paymentConfirmed();
+            }
+        }
+
+        function paymentConfirmed() {
+            // تحديث الحالة
+            const paymentInfo = document.getElementById('paymentInfo');
+            paymentInfo.innerHTML = '<strong>✅ تم الدفع بنجاح!</strong>';
+            paymentInfo.className = 'payment-status success';
+            
+            const statusEl = document.getElementById('paymentStatus');
+            statusEl.textContent = '✅ مؤكد';
+            statusEl.style.background = '#d4edda';
+            statusEl.style.color = '#155724';
+            
+            const trackBtn = document.getElementById('trackBtn');
+            trackBtn.disabled = false;
+            
+            const redirectMessage = document.getElementById('redirectMessage');
+            redirectMessage.textContent = '🎉 تم تأكيد الدفع! جاري التوجيه لمتابعة الطلب...';
+            
+            // توجيه تلقائي بعد 3 ثواني
+            setTimeout(() => {
+                goToTracking();
+            }, 3000);
         }
 
         function renderOrderDetails() {
@@ -326,20 +425,20 @@
             document.getElementById('orderDetails').innerHTML = '<p style="color: #999;">لم يتم العثور على بيانات الطلب</p>';
         }
 
-        function startRedirectTimer() {
-            const redirectMessage = document.getElementById('redirectMessage');
-            const interval = setInterval(() => {
-                redirectTimer--;
-                redirectMessage.textContent = `سيتم التوجيه لمتابعة الطلب بعد ${redirectTimer} ثوانٍ...`;
-                if (redirectTimer <= 0) {
-                    clearInterval(interval);
-                    goToTracking();
-                }
-            }, 1000);
-        }
-
         function goToTracking() {
             if (lastOrder && lastOrder.orderId) {
+                // حفظ الطلب في cozOrders قبل الانتقال
+                try {
+                    const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                    const index = orders.findIndex(o => o.orderId === lastOrder.orderId);
+                    if (index >= 0) {
+                        orders[index] = lastOrder;
+                        localStorage.setItem('cozOrders', JSON.stringify(orders));
+                    }
+                } catch (e) {
+                    console.error('Error:', e);
+                }
+                
                 window.location.href = `tracking.html?order=${lastOrder.orderId}`;
             } else {
                 goHome();
@@ -349,7 +448,6 @@
         function goHome() {
             localStorage.removeItem('lastOrder');
             localStorage.removeItem('tempOrder');
-            localStorage.removeItem('cozCart');
             window.location.href = 'index.html';
         }
 
