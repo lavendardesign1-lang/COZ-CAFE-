@@ -105,6 +105,12 @@ function setupLanguageButtons() {
     });
 }
 
+// ===== التحقق من توفر المنتج =====
+function isProductAvailable(productId) {
+    const availability = JSON.parse(localStorage.getItem('productsAvailability') || '{}');
+    return availability[productId] !== false;
+}
+
 // ===== رسم المنتجات =====
 function renderProducts() {
     const list = document.getElementById('products-list');
@@ -135,9 +141,16 @@ function renderProducts() {
             grid.className = 'v60-flavors';
 
             cat.items.forEach(item => {
+                const available = isProductAvailable(item.id);
                 const card = document.createElement('div');
                 card.className = 'v60-flavor-card';
+                card.style.opacity = available ? '1' : '0.5';
+                
                 const itemName = currentLang === 'ar' ? item.nameAr : item.nameEn;
+                const btnText = available 
+                    ? (currentLang === 'ar' ? '+ أضف' : '+ Add')
+                    : (currentLang === 'ar' ? '❌ غير متوفر' : '❌ Unavailable');
+                
                 card.innerHTML = `
                     <img src="${item.image}" alt="${itemName}" class="v60-flavor-img"
                          onerror="this.style.background='linear-gradient(135deg,#d4a46a,#C19A6B)';this.style.display='block';">
@@ -146,8 +159,13 @@ function renderProducts() {
                         <span class="v60-flavor-price">${item.price} AED</span>
                     </div>
                     <div class="v60-flavor-actions">
-                        <input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">
-                        <button class="add-btn" onclick="addToCart(${item.id}, '${catKey}')">${currentLang === 'ar' ? '+ أضف' : '+ Add'}</button>
+                        <input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10" ${available ? '' : 'disabled'}>
+                        <button class="add-btn ${available ? '' : 'unavailable'}" 
+                                onclick="${available ? `addToCart(${item.id}, '${catKey}')` : 'return false'}"
+                                ${available ? '' : 'disabled'}
+                                style="background-color: ${available ? '' : '#999'};">
+                            ${btnText}
+                        </button>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -162,12 +180,13 @@ function renderProducts() {
                 section.appendChild(row.firstElementChild);
 
                 // خيار Coconut Milk
+                const available = isProductAvailable(item.id);
                 const coconut = document.createElement('div');
                 coconut.className = 'coconut-option';
                 coconut.id = `coconut-wrapper-${item.id}`;
                 coconut.innerHTML = `
                     <label>
-                        <input type="checkbox" id="coconut-${item.id}">
+                        <input type="checkbox" id="coconut-${item.id}" ${available ? '' : 'disabled'}>
                         Coconut Milk <strong>+3 AED</strong>
                     </label>
                 `;
@@ -188,14 +207,19 @@ function renderProducts() {
 }
 
 function buildProductRow(item, catKey) {
+    const available = isProductAvailable(item.id);
     const itemName = currentLang === 'ar' ? item.nameAr : item.nameEn;
     const imgHTML = item.image
         ? `<img src="${item.image}" alt="${itemName}" class="product-thumb"
                onerror="this.style.display='none'">`
         : '';
 
+    const btnText = available 
+        ? (currentLang === 'ar' ? '+ أضف' : '+ Add')
+        : (currentLang === 'ar' ? '❌ غير متوفر' : '❌ Unavailable');
+
     return `
-        <div class="product-row">
+        <div class="product-row" style="opacity: ${available ? '1' : '0.5'};">
             <div class="product-row-left">
                 ${imgHTML}
                 <div>
@@ -204,8 +228,13 @@ function buildProductRow(item, catKey) {
             </div>
             <div class="product-row-right">
                 <span class="price-tag">${item.price} AED</span>
-                <input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">
-                <button class="add-btn" onclick="addToCart(${item.id}, '${catKey}')">${currentLang === 'ar' ? '+ أضف' : '+ Add'}</button>
+                <input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10" ${available ? '' : 'disabled'}>
+                <button class="add-btn ${available ? '' : 'unavailable'}" 
+                        onclick="${available ? `addToCart(${item.id}, '${catKey}')` : 'return false'}"
+                        ${available ? '' : 'disabled'}
+                        style="background-color: ${available ? '' : '#999'};">
+                    ${btnText}
+                </button>
             </div>
         </div>
     `;
@@ -213,6 +242,12 @@ function buildProductRow(item, catKey) {
 
 // ===== إضافة للسلة =====
 function addToCart(itemId, catKey) {
+    // التحقق من التوفر قبل الإضافة
+    if (!isProductAvailable(itemId)) {
+        alert(currentLang === 'ar' ? 'هذا المنتج غير متوفر حالياً' : 'This product is not available');
+        return;
+    }
+
     const item = products[catKey].items.find(i => i.id === itemId);
     const qty = parseInt(document.getElementById(`qty-${itemId}`).value) || 1;
     let finalPrice = item.price;
