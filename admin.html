@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - COZ CAFE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 32px;
+        }
+
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            border-right: 5px solid #D2B48C;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .number {
+            color: #8B6914;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .currency {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .stat-card.pending {
+            border-right-color: #ffc107;
+        }
+
+        .stat-card.pending .number {
+            color: #ff9800;
+        }
+
+        .stat-card.approved {
+            border-right-color: #28a745;
+        }
+
+        .stat-card.approved .number {
+            color: #28a745;
+        }
+
+        .stat-card.preparing {
+            border-right-color: #17a2b8;
+        }
+
+        .stat-card.preparing .number {
+            color: #17a2b8;
+        }
+
+        .stat-card.ready {
+            border-right-color: #6f42c1;
+        }
+
+        .stat-card.ready .number {
+            color: #6f42c1;
+        }
+
+        .orders-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .orders-section h2 {
+            color: #8B6914;
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #D2B48C;
+            padding-bottom: 15px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #D2B48C;
+            background: white;
+            color: #8B6914;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #8B6914;
+            color: white;
+        }
+
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .order-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            border-right: 4px solid #D2B48C;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 20px;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .order-card:hover {
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            transform: translateX(-5px);
+        }
+
+        .order-card.pending {
+            border-right-color: #ffc107;
+            background: #fffbf0;
+        }
+
+        .order-card.approved {
+            border-right-color: #28a745;
+            background: #f0fdf4;
+        }
+
+        .order-card.preparing {
+            border-right-color: #17a2b8;
+            background: #f0f7ff;
+        }
+
+        .order-card.ready {
+            border-right-color: #6f42c1;
+            background: #faf5ff;
+        }
+
+        .order-info h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .order-info p {
+            color: #666;
+            font-size: 13px;
+            margin: 4px 0;
+        }
+
+        .order-items {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .order-items strong {
+            color: #333;
+        }
+
+        .order-total {
+            text-align: center;
+        }
+
+        .order-total .amount {
+            color: #8B6914;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .order-total .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.preparing {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-badge.ready {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .order-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #218838;
+        }
+
+        .btn-preparing {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-preparing:hover {
+            background: #138496;
+        }
+
+        .btn-ready {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .btn-ready:hover {
+            background: #5a32a3;
+        }
+
+        .btn-complete {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-complete:hover {
+            background: #5a6268;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state p {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 1200px) {
+            .order-card {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .order-actions {
+                grid-column: 1 / -1;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .order-card {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div>
+                <h1>☕ لوحة التحكم</h1>
+                <p>إدارة الطلبات والإيرادات</p>
+            </div>
+            <button class="refresh-btn" onclick="refreshData()">🔄 تحديث</button>
+        </div>
+
+        <!-- الإحصائيات -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>💰 إجمالي الإيرادات</h3>
+                <div class="number" id="totalRevenue">0</div>
+                <div class="currency">AED</div>
+            </div>
+
+            <div class="stat-card pending">
+                <h3>⏳ طلبات معلقة</h3>
+                <div class="number" id="pendingCount">0</div>
+                <div class="currency">في الانتظار</div>
+            </div>
+
+            <div class="stat-card approved">
+                <h3>✅ طلبات مقبولة</h3>
+                <div class="number" id="approvedCount">0</div>
+                <div class="currency">تم قبولها</div>
+            </div>
+
+            <div class="stat-card preparing">
+                <h3>👨‍🍳 قيد الإعداد</h3>
+                <div class="number" id="preparingCount">0</div>
+                <div class="currency">يجري التحضير</div>
+            </div>
+
+            <div class="stat-card ready">
+                <h3>🚗 جاهزة للتقديم</h3>
+                <div class="number" id="readyCount">0</div>
+                <div class="currency">جاهزة</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>📊 إجمالي الطلبات</h3>
+                <div class="number" id="totalOrders">0</div>
+                <div class="currency">طلب</div>
+            </div>
+        </div>
+
+        <!-- قائمة الطلبات -->
+        <div class="orders-section">
+            <h2>📋 الطلبات</h2>
+
+            <div class="filter-tabs">
+                <button class="filter-btn active" onclick="filterOrders('all')">الكل</button>
+                <button class="filter-btn" onclick="filterOrders('pending')">⏳ معلقة</button>
+                <button class="filter-btn" onclick="filterOrders('approved')">✅ مقبولة</button>
+                <button class="filter-btn" onclick="filterOrders('preparing')">👨‍🍳 قيد الإعداد</button>
+                <button class="filter-btn" onclick="filterOrders('ready')">🚗 جاهزة</button>
+            </div>
+
+            <div class="orders-list" id="ordersList">
+                <div class="empty-state">
+                    <div class="icon">📭</div>
+                    <p>لا توجد طلبات حالياً</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allOrders = [];
+        let currentFilter = 'all';
+
+        // تحميل البيانات عند فتح الصفحة
+        window.addEventListener('DOMContentLoaded', () => {
+            loadOrders();
+            updateStats();
+            // تحديث البيانات كل 3 ثوانٍ
+            setInterval(() => {
+                loadOrders();
+                updateStats();
+            }, 3000);
+        });
+
+        // تحميل الطلبات من localStorage
+        function loadOrders() {
+            try {
+                const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                allOrders = orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderOrders();
+            } catch (e) {
+                console.error('Error loading orders:', e);
+                allOrders = [];
+            }
+        }
+
+        // تحديث الإحصائيات
+        function updateStats() {
+            let totalRevenue = 0;
+            let pending = 0, approved = 0, preparing = 0, ready = 0;
+
+            allOrders.forEach(order => {
+                totalRevenue += order.total || 0;
+                switch (order.status) {
+                    case 'pending':
+                        pending++;
+                        break;
+                    case 'approved':
+                        approved++;
+                        break;
+                    case 'preparing':
+                        preparing++;
+                        break;
+                    case 'ready':
+                        ready++;
+                        break;
+                }
+            });
+
+            document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2);
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('preparingCount').textContent = preparing;
+            document.getElementById('readyCount').textContent = ready;
+            document.getElementById('totalOrders').textContent = allOrders.length;
+        }
+
+        // عرض الطلبات
+        function renderOrders() {
+            const list = document.getElementById('ordersList');
+            let filtered = currentFilter === 'all' 
+                ? allOrders 
+                : allOrders.filter(o => o.status === currentFilter);
+
+            if (filtered.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>لا توجد طلبات في هذه الفئة</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = filtered.map(order => `
+                <div class="order-card ${order.status || 'pending'}">
+                    <div class="order-info">
+                        <h3>🆔 ${order.orderId}</h3>
+                        <p><strong>👤</strong> ${order.name}</p>
+                        <p><strong>📱</strong> ${order.phone}</p>
+                        <p><strong>🚗</strong> ${order.carNumber || 'N/A'}</p>
+                        <p><strong>⏰</strong> ${new Date(order.timestamp).toLocaleString('ar-SA')}</p>
+                    </div>
+
+                    <div class="order-items">
+                        <strong>📦 المنتجات:</strong><br>
+                        ${order.items ? order.items.map(item => 
+                            `${item.name} × ${item.quantity} = ${item.price * item.quantity} AED`
+                        ).join('<br>') : 'N/A'}
+                    </div>
+
+                    <div class="order-total">
+                        <div class="amount">${order.total || 0} AED</div>
+                        <div class="status-badge ${order.status || 'pending'}">
+                            ${getStatusText(order.status)}
+                        </div>
+                    </div>
+
+                    <div class="order-actions">
+                        ${getActionButtons(order)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // الأزرار حسب الحالة
+        function getActionButtons(order) {
+            const status = order.status || 'pending';
+            
+            if (status === 'pending') {
+                return `<button class="action-btn btn-approve" onclick="updateOrderStatus('${order.orderId}', 'approved')">✅ قبول</button>`;
+            } else if (status === 'approved') {
+                return `<button class="action-btn btn-preparing" onclick="updateOrderStatus('${order.orderId}', 'preparing')">👨‍🍳 جاري الإعداد</button>`;
+            } else if (status === 'preparing') {
+                return `<button class="action-btn btn-ready" onclick="updateOrderStatus('${order.orderId}', 'ready')">🚗 جاهز للتقديم</button>`;
+            } else if (status === 'ready') {
+                return `<button class="action-btn btn-complete" onclick="updateOrderStatus('${order.orderId}', 'completed')">✔️ انتهيت</button>`;
+            }
+            return '';
+        }
+
+        // تحديث حالة الطلب
+        function updateOrderStatus(orderId, newStatus) {
+            const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+            const order = orders.find(o => o.orderId === orderId);
+            
+            if (order) {
+                order.status = newStatus;
+                localStorage.setItem('cozOrders', JSON.stringify(orders));
+                loadOrders();
+                updateStats();
+            }
+        }
+
+        // نص الحالة
+        function getStatusText(status) {
+            const statuses = {
+                'pending': '⏳ في الانتظار',
+                'approved': '✅ مقبول',
+                'preparing': '👨‍🍳 قيد الإعداد',
+                'ready': '🚗 جاهز للتقديم',
+                'completed': '✔️ مكتمل'
+            };
+            return statuses[status] || '❓ غير معروف';
+        }
+
+        // تصفية الطلبات
+        function filterOrders(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderOrders();
+        }
+
+        // تحديث البيانات
+        function refreshData() {
+            loadOrders();
+            updateStats();
+        }
+    </script>
+</body>
+</html>
