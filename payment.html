@@ -262,6 +262,79 @@
             100% { transform: rotate(360deg); }
         }
 
+        .ziina-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .ziina-frame {
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            height: 90vh;
+            max-height: 800px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .ziina-header {
+            background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .ziina-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ziina-iframe {
+            flex: 1;
+            border: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .info-box {
+            background: #fffbf0;
+            padding: 12px;
+            border-radius: 8px;
+            border-right: 3px solid #D2B48C;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: #8B6914;
+        }
+
         @media (max-width: 768px) {
             .payment-content {
                 grid-template-columns: 1fr;
@@ -278,21 +351,11 @@
             .cart-items {
                 max-height: 200px;
             }
-        }
 
-        .info-box {
-            background: #fffbf0;
-            padding: 12px;
-            border-radius: 8px;
-            border-right: 3px solid #D2B48C;
-            margin-top: 15px;
-            font-size: 13px;
-            color: #666;
-            line-height: 1.6;
-        }
-
-        .info-box strong {
-            color: #8B6914;
+            .ziina-frame {
+                width: 95%;
+                max-height: 95vh;
+            }
         }
     </style>
 </head>
@@ -370,9 +433,20 @@
                 </div>
 
                 <div class="info-box" style="margin-top: 10px; background: #e7f3ff; border-right-color: #17a2b8;">
-                    <strong>💡 ملاحظة:</strong> صفحة الدفع ستفتح في تبويب جديد. بعد الانتهاء من الدفع، ستعود لموقعنا تلقائياً
+                    <strong>💡 ملاحظة:</strong> صفحة الدفع ستظهر في نافذة آمنة. بعد الانتهاء من الدفع، ستعود لموقعنا تلقائياً
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- نافذة Ziina الآمنة -->
+    <div class="ziina-container" id="ziinaContainer">
+        <div class="ziina-frame">
+            <div class="ziina-header">
+                <span>💳 صفحة الدفع الآمنة</span>
+                <button class="ziina-close" onclick="closeZiinaModal()">✕</button>
+            </div>
+            <iframe id="ziinaIframe" class="ziina-iframe"></iframe>
         </div>
     </div>
 
@@ -380,12 +454,25 @@
         let cart = [];
         let deliveryFee = 0;
         let currentOrder = null;
+        let paymentCheckInterval = null;
 
         // تحميل السلة عند فتح الصفحة
         window.addEventListener('DOMContentLoaded', () => {
             loadCart();
             renderCart();
+            setupPostMessageListener();
         });
+
+        // الاستماع للرسائل من Ziina
+        function setupPostMessageListener() {
+            window.addEventListener('message', (event) => {
+                console.log('Message received:', event.data);
+                
+                if (event.data && event.data.type === 'payment_success') {
+                    handlePaymentSuccess(event.data.orderId);
+                }
+            });
+        }
 
         // تحميل السلة من localStorage
         function loadCart() {
@@ -444,7 +531,6 @@
             const phone = document.getElementById('customerPhone').value.trim();
             const carNumber = document.getElementById('carNumber').value.trim();
 
-            // التحقق من البيانات
             if (!name || !phone || !carNumber) {
                 showError('يرجى ملء جميع الحقول المطلوبة');
                 return;
@@ -455,7 +541,6 @@
                 return;
             }
 
-            // إنشاء الدفع
             createPayment(name, phone, carNumber);
         }
 
@@ -468,7 +553,6 @@
                 const total = calculateTotal();
                 const orderId = 'ORD-' + Date.now();
 
-                // بيانات الطلب
                 currentOrder = {
                     orderId: orderId,
                     name: name,
@@ -484,26 +568,13 @@
                     paymentTime: null
                 };
 
-                // حفظ الطلب في cozOrders
                 saveOrder(currentOrder);
 
-                // إنشاء رابط الدفع
                 const paymentLink = createPaymentLink(currentOrder);
                 
-                showSuccess('جاري فتح صفحة الدفع الآمنة...');
-                
-                // فتح Ziina في تبويب جديد
                 setTimeout(() => {
-                    window.open(paymentLink, '_blank');
-                    
-                    // إظهار رسالة النجاح
+                    openZiinaModal(paymentLink);
                     showLoading(false);
-                    showSuccess('✓ تم فتح صفحة الدفع في تبويب جديد. بعد الدفع، ستعود لموقعنا تلقائياً');
-                    
-                    // إخفاء النموذج بعد الضغط
-                    document.getElementById('paymentForm').style.display = 'none';
-                    document.querySelector('.button-group').style.display = 'none';
-                    
                 }, 500);
 
             } catch (error) {
@@ -513,18 +584,74 @@
             }
         }
 
+        // فتح نافذة Ziina
+        function openZiinaModal(paymentLink) {
+            const iframe = document.getElementById('ziinaIframe');
+            iframe.src = paymentLink;
+            document.getElementById('ziinaContainer').style.display = 'flex';
+            
+            // بدء التحقق من الدفع كل 2 ثانية
+            startPaymentCheck();
+        }
+
+        // إغلاق نافذة Ziina
+        function closeZiinaModal() {
+            document.getElementById('ziinaContainer').style.display = 'none';
+            stopPaymentCheck();
+        }
+
+        // بدء التحقق من الدفع
+        function startPaymentCheck() {
+            if (paymentCheckInterval) clearInterval(paymentCheckInterval);
+            
+            paymentCheckInterval = setInterval(() => {
+                if (currentOrder) {
+                    try {
+                        const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                        const updatedOrder = orders.find(o => o.orderId === currentOrder.orderId);
+                        
+                        if (updatedOrder && updatedOrder.status === 'confirmed') {
+                            handlePaymentSuccess(currentOrder.orderId);
+                        }
+                    } catch (e) {
+                        console.error('Error checking payment:', e);
+                    }
+                }
+            }, 2000);
+        }
+
+        // إيقاف التحقق
+        function stopPaymentCheck() {
+            if (paymentCheckInterval) {
+                clearInterval(paymentCheckInterval);
+                paymentCheckInterval = null;
+            }
+        }
+
+        // معالجة نجاح الدفع
+        function handlePaymentSuccess(orderId) {
+            stopPaymentCheck();
+            closeZiinaModal();
+            
+            showSuccess('✅ تم الدفع بنجاح! جاري نقلك لمتابعة الطلب...');
+            
+            // تنظيف السلة
+            localStorage.removeItem('cozCart');
+            
+            // الانتقال لـ tracking بعد ثانية
+            setTimeout(() => {
+                window.location.href = 'tracking.html?order=' + orderId;
+            }, 1500);
+        }
+
         // إنشاء رابط الدفع
         function createPaymentLink(orderData) {
-            // الرابط الكامل للعودة للموقع الرئيسي
-            const redirectUrl = window.location.origin + window.location.pathname.replace('payment.html', 'index.html') + '?order=' + orderData.orderId;
-            
             const params = new URLSearchParams({
                 amount: orderData.total,
                 customer_name: orderData.name,
                 customer_phone: orderData.phone,
                 order_id: orderData.orderId,
-                description: `COZ CAFE - ${orderData.items.map(i => i.name).join(', ')}`,
-                redirect_url: redirectUrl
+                description: `COZ CAFE - ${orderData.items.map(i => i.name).join(', ')}`
             });
 
             return 'https://pay.ziina.com/ar/sharjha11/?' + params.toString();
@@ -599,6 +726,11 @@
                     window.location.href = 'index.html';
                 }, 2000);
             }
+        });
+
+        // تنظيف عند إغلاق الصفحة
+        window.addEventListener('beforeunload', () => {
+            stopPaymentCheck();
         });
     </script>
 </body>
