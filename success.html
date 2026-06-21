@@ -258,12 +258,12 @@
         </div>
 
         <div class="buttons">
-            <button class="btn btn-primary" onclick="goHome()">🏠 العودة للرئيسية</button>
+            <button class="btn btn-primary" onclick="goToTracking()">📍 متابعة الطلب</button>
             <button class="btn btn-secondary" onclick="makeNewOrder()">🛒 طلب جديد</button>
         </div>
 
         <div class="timer">
-            <span id="redirectMessage">سيتم التوجيه للرئيسية بعد 10 ثوانٍ...</span>
+            <span id="redirectMessage">سيتم التوجيه لمتابعة الطلب بعد 10 ثوانٍ...</span>
         </div>
     </div>
 
@@ -330,12 +330,20 @@
             const redirectMessage = document.getElementById('redirectMessage');
             const interval = setInterval(() => {
                 redirectTimer--;
-                redirectMessage.textContent = `سيتم التوجيه للرئيسية بعد ${redirectTimer} ثوانٍ...`;
+                redirectMessage.textContent = `سيتم التوجيه لمتابعة الطلب بعد ${redirectTimer} ثوانٍ...`;
                 if (redirectTimer <= 0) {
                     clearInterval(interval);
-                    goHome();
+                    goToTracking();
                 }
             }, 1000);
+        }
+
+        function goToTracking() {
+            if (lastOrder && lastOrder.orderId) {
+                window.location.href = `tracking.html?order=${lastOrder.orderId}`;
+            } else {
+                goHome();
+            }
         }
 
         function goHome() {
