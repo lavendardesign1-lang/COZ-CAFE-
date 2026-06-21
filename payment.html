@@ -221,24 +221,33 @@
             transform: none;
         }
 
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 12px;
+        .message {
+            padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
             display: none;
-            border-right: 4px solid #f5c6cb;
+            border-right: 4px solid;
         }
 
-        .success-message {
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-right-color: #f5c6cb;
+            display: block;
+        }
+
+        .message.success {
             background: #d4edda;
             color: #155724;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-            border-right: 4px solid #c3e6cb;
+            border-right-color: #c3e6cb;
+            display: block;
+        }
+
+        .message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border-right-color: #ffeeba;
+            display: block;
         }
 
         .loading {
@@ -260,64 +269,6 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        .ziina-container {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .ziina-frame {
-            background: white;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 600px;
-            height: 90vh;
-            max-height: 800px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .ziina-header {
-            background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .ziina-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .ziina-iframe {
-            flex: 1;
-            border: none;
-            width: 100%;
-            height: 100%;
         }
 
         .info-box {
@@ -351,11 +302,6 @@
             .cart-items {
                 max-height: 200px;
             }
-
-            .ziina-frame {
-                width: 95%;
-                max-height: 95vh;
-            }
         }
     </style>
 </head>
@@ -369,11 +315,12 @@
         <div class="payment-content">
             <!-- نموذج المعلومات -->
             <div class="form-section">
-                <div class="error-message" id="errorMessage"></div>
-                <div class="success-message" id="successMessage"></div>
+                <div class="message error" id="errorMessage"></div>
+                <div class="message success" id="successMessage"></div>
+                <div class="message warning" id="warningMessage"></div>
                 <div class="loading" id="loadingSpinner">
                     <div class="spinner"></div>
-                    <p style="margin-top: 15px; color: #666;">جاري تحضير صفحة الدفع...</p>
+                    <p style="margin-top: 15px; color: #666;">جاري معالجة طلبك...</p>
                 </div>
 
                 <form id="paymentForm" onsubmit="handlePayment(event)">
@@ -431,22 +378,7 @@
                 <div class="info-box" style="margin-top: 15px;">
                     <strong>✓ آمن تماماً:</strong> جميع المعاملات محمية بأعلى معايير الأمان
                 </div>
-
-                <div class="info-box" style="margin-top: 10px; background: #e7f3ff; border-right-color: #17a2b8;">
-                    <strong>💡 ملاحظة:</strong> صفحة الدفع ستظهر في نافذة آمنة. بعد الانتهاء من الدفع، ستعود لموقعنا تلقائياً
-                </div>
             </div>
-        </div>
-    </div>
-
-    <!-- نافذة Ziina الآمنة -->
-    <div class="ziina-container" id="ziinaContainer">
-        <div class="ziina-frame">
-            <div class="ziina-header">
-                <span>💳 صفحة الدفع الآمنة</span>
-                <button class="ziina-close" onclick="closeZiinaModal()">✕</button>
-            </div>
-            <iframe id="ziinaIframe" class="ziina-iframe"></iframe>
         </div>
     </div>
 
@@ -454,31 +386,21 @@
         let cart = [];
         let deliveryFee = 0;
         let currentOrder = null;
-        let paymentCheckInterval = null;
 
         // تحميل السلة عند فتح الصفحة
         window.addEventListener('DOMContentLoaded', () => {
+            console.log('📄 Loading payment page...');
             loadCart();
             renderCart();
-            setupPostMessageListener();
         });
-
-        // الاستماع للرسائل من Ziina
-        function setupPostMessageListener() {
-            window.addEventListener('message', (event) => {
-                console.log('Message received:', event.data);
-                
-                if (event.data && event.data.type === 'payment_success') {
-                    handlePaymentSuccess(event.data.orderId);
-                }
-            });
-        }
 
         // تحميل السلة من localStorage
         function loadCart() {
             try {
                 cart = JSON.parse(localStorage.getItem('cozCart')) || [];
+                console.log('✅ Cart loaded:', cart);
             } catch (e) {
+                console.error('Error loading cart:', e);
                 cart = [];
             }
         }
@@ -487,13 +409,16 @@
         function renderCart() {
             const cartList = document.getElementById('cartItemsList');
             const subtotalEl = document.getElementById('subtotal');
+            const deliveryEl = document.getElementById('delivery');
             const totalEl = document.getElementById('totalPrice');
 
             if (cart.length === 0) {
                 cartList.innerHTML = '<div class="empty-cart">السلة فارغة 🛒</div>';
                 subtotalEl.textContent = '0 AED';
+                deliveryEl.textContent = '0 AED';
                 totalEl.textContent = '0 AED';
                 document.getElementById('payBtn').disabled = true;
+                showWarning('السلة فارغة! الرجاء اختيار منتجات أولاً');
                 return;
             }
 
@@ -516,11 +441,13 @@
 
             cartList.innerHTML = html;
             subtotalEl.textContent = subtotal + ' AED';
+            deliveryEl.textContent = deliveryFee + ' AED';
             
             const total = subtotal + deliveryFee;
             totalEl.textContent = total + ' AED';
             
             document.getElementById('payBtn').disabled = false;
+            hideMessages();
         }
 
         // معالجة الدفع
@@ -541,10 +468,17 @@
                 return;
             }
 
+            // التحقق من فتح الطلبات
+            const ordersOpen = localStorage.getItem('ordersOpen') !== 'false';
+            if (!ordersOpen) {
+                showError('آسف! الطلبات مغلقة حالياً');
+                return;
+            }
+
             createPayment(name, phone, carNumber);
         }
 
-        // إنشاء الدفع
+        // إنشاء الطلب والدفع
         function createPayment(name, phone, carNumber) {
             showLoading(true);
             hideMessages();
@@ -564,18 +498,17 @@
                     total: total,
                     status: 'pending',
                     timestamp: new Date().toISOString(),
-                    paymentMethod: 'ziina',
-                    paymentTime: null
+                    paymentMethod: 'cash'
                 };
 
+                // حفظ الطلب
                 saveOrder(currentOrder);
 
-                const paymentLink = createPaymentLink(currentOrder);
-                
+                // محاكاة معالجة الدفع
                 setTimeout(() => {
-                    openZiinaModal(paymentLink);
                     showLoading(false);
-                }, 500);
+                    processPaymentSuccess(orderId);
+                }, 1500);
 
             } catch (error) {
                 showLoading(false);
@@ -584,77 +517,17 @@
             }
         }
 
-        // فتح نافذة Ziina
-        function openZiinaModal(paymentLink) {
-            const iframe = document.getElementById('ziinaIframe');
-            iframe.src = paymentLink;
-            document.getElementById('ziinaContainer').style.display = 'flex';
-            
-            // بدء التحقق من الدفع كل 2 ثانية
-            startPaymentCheck();
-        }
-
-        // إغلاق نافذة Ziina
-        function closeZiinaModal() {
-            document.getElementById('ziinaContainer').style.display = 'none';
-            stopPaymentCheck();
-        }
-
-        // بدء التحقق من الدفع
-        function startPaymentCheck() {
-            if (paymentCheckInterval) clearInterval(paymentCheckInterval);
-            
-            paymentCheckInterval = setInterval(() => {
-                if (currentOrder) {
-                    try {
-                        const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
-                        const updatedOrder = orders.find(o => o.orderId === currentOrder.orderId);
-                        
-                        if (updatedOrder && updatedOrder.status === 'confirmed') {
-                            handlePaymentSuccess(currentOrder.orderId);
-                        }
-                    } catch (e) {
-                        console.error('Error checking payment:', e);
-                    }
-                }
-            }, 2000);
-        }
-
-        // إيقاف التحقق
-        function stopPaymentCheck() {
-            if (paymentCheckInterval) {
-                clearInterval(paymentCheckInterval);
-                paymentCheckInterval = null;
-            }
-        }
-
         // معالجة نجاح الدفع
-        function handlePaymentSuccess(orderId) {
-            stopPaymentCheck();
-            closeZiinaModal();
-            
-            showSuccess('✅ تم الدفع بنجاح! جاري نقلك لمتابعة الطلب...');
-            
+        function processPaymentSuccess(orderId) {
+            showSuccess('✅ تم استقبال الطلب بنجاح!');
+
             // تنظيف السلة
             localStorage.removeItem('cozCart');
             
-            // الانتقال لـ tracking بعد ثانية
+            // الانتقال لصفحة التتبع بعد ثانيتين
             setTimeout(() => {
                 window.location.href = 'tracking.html?order=' + orderId;
-            }, 1500);
-        }
-
-        // إنشاء رابط الدفع
-        function createPaymentLink(orderData) {
-            const params = new URLSearchParams({
-                amount: orderData.total,
-                customer_name: orderData.name,
-                customer_phone: orderData.phone,
-                order_id: orderData.orderId,
-                description: `COZ CAFE - ${orderData.items.map(i => i.name).join(', ')}`
-            });
-
-            return 'https://pay.ziina.com/ar/sharjha11/?' + params.toString();
+            }, 2000);
         }
 
         // حفظ الطلب
@@ -684,6 +557,7 @@
 
         // إظهار رسالة خطأ
         function showError(message) {
+            hideMessages();
             const errorEl = document.getElementById('errorMessage');
             errorEl.textContent = message;
             errorEl.style.display = 'block';
@@ -694,15 +568,25 @@
 
         // إظهار رسالة نجاح
         function showSuccess(message) {
+            hideMessages();
             const successEl = document.getElementById('successMessage');
             successEl.textContent = message;
             successEl.style.display = 'block';
+        }
+
+        // إظهار رسالة تحذير
+        function showWarning(message) {
+            hideMessages();
+            const warningEl = document.getElementById('warningMessage');
+            warningEl.textContent = message;
+            warningEl.style.display = 'block';
         }
 
         // إخفاء الرسائل
         function hideMessages() {
             document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('warningMessage').style.display = 'none';
         }
 
         // عرض/إخفاء التحميل
@@ -726,11 +610,6 @@
                     window.location.href = 'index.html';
                 }, 2000);
             }
-        });
-
-        // تنظيف عند إغلاق الصفحة
-        window.addEventListener('beforeunload', () => {
-            stopPaymentCheck();
         });
     </script>
 </body>
