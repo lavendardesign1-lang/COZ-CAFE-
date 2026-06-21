@@ -366,6 +366,16 @@
             background: #999;
         }
 
+        .btn-secondary {
+            background: #ffc107;
+            color: #333;
+            margin-right: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0a800;
+        }
+
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -420,15 +430,20 @@
             font-weight: 600;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #D2B48C;
             border-radius: 5px;
             font-size: 14px;
+            font-family: inherit;
         }
 
-        .form-group input:focus {
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: #8B6914;
             box-shadow: 0 0 5px rgba(139, 105, 20, 0.3);
@@ -449,6 +464,124 @@
 
         .login-btn:hover {
             background: linear-gradient(135deg, #654321 0%, #C19A6B 100%);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            color: #8B6914;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-right: 3px solid #D2B48C;
+        }
+
+        .product-card h4 {
+            color: #8B6914;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .product-card p {
+            font-size: 12px;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .product-card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .product-card-actions button {
+            flex: 1;
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
         @media (max-width: 768px) {
@@ -495,8 +628,8 @@
             <ul>
                 <li><a onclick="showSection('dashboard')">📊</a></li>
                 <li><a onclick="showSection('orders')">📦</a></li>
+                <li><a onclick="showSection('products-manage')">🍵</a></li>
                 <li><a onclick="showSection('controls')">⚙️</a></li>
-                <li><a onclick="showSection('products')">🍵</a></li>
                 <li><a onclick="logout()">🚪</a></li>
             </ul>
         </div>
@@ -547,6 +680,18 @@
                 </div>
             </div>
 
+            <!-- Products Management Section -->
+            <div id="products-manage" class="section">
+                <div class="card">
+                    <div class="section-header">
+                        <h2>🍵 إدارة المنتجات</h2>
+                        <button class="btn btn-success" onclick="openAddProductModal()" style="width: auto; margin: 0;">➕ إضافة منتج</button>
+                    </div>
+                    <div id="messageContainer"></div>
+                    <div class="products-grid" id="managedProductsGrid"></div>
+                </div>
+            </div>
+
             <!-- Controls Section -->
             <div id="controls" class="section">
                 <div class="control-group">
@@ -585,17 +730,70 @@
                         </p>
                         <input type="text" value="https://lavendardesign1-lang.github.io/COZ-CAFE-/" readonly style="width: 100%; padding: 8px; border: 1px solid #D2B48C; border-radius: 5px;">
                     </div>
-                </div>
-            </div>
 
-            <!-- Products Section -->
-            <div id="products" class="section">
-                <div class="card">
-                    <h2>🍵 إدارة توفر المنتجات</h2>
-                    <div class="product-availability" id="productsGrid">
+                    <div class="control-item">
+                        <h3>🛍️ توفر المنتجات</h3>
+                        <p style="color: #666; margin-bottom: 15px; font-size: 14px;">
+                            تحكم في توفر المنتجات
+                        </p>
+                        <button class="btn btn-primary" onclick="showSection('controls'); loadProductsAvailability()">إدارة التوفر</button>
                     </div>
                 </div>
+
+                <!-- Product Availability -->
+                <div class="card" id="availabilityCard" style="display: none;">
+                    <h2>🛍️ توفر المنتجات</h2>
+                    <div class="product-availability" id="productsGrid"></div>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="modalTitle">إضافة منتج جديد</span>
+                <button class="close-btn" onclick="closeProductModal()">&times;</button>
+            </div>
+            <form id="productForm" onsubmit="saveProduct(event)">
+                <div class="form-group">
+                    <label>اسم المنتج (عربي) *</label>
+                    <input type="text" id="productNameAr" required>
+                </div>
+
+                <div class="form-group">
+                    <label>اسم المنتج (إنجليزي) *</label>
+                    <input type="text" id="productNameEn" required>
+                </div>
+
+                <div class="form-group">
+                    <label>السعر (AED) *</label>
+                    <input type="number" id="productPrice" min="0" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label>التصنيف *</label>
+                    <select id="productCategory" required>
+                        <option value="">اختر التصنيف</option>
+                        <option value="V60">V60</option>
+                        <option value="ESPRESSO">ESPRESSO</option>
+                        <option value="MATCHA">MATCHA</option>
+                        <option value="HIBISCUS">HIBISCUS</option>
+                        <option value="DESSERTS">DESSERTS</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>رابط الصورة</label>
+                    <input type="text" id="productImage" placeholder="مثال: images/product.jpg">
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-success">💾 حفظ</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeProductModal()">إلغاء</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -606,6 +804,8 @@
             emailNotifications: localStorage.getItem('emailNotifications') !== 'false',
             productsAvailability: JSON.parse(localStorage.getItem('productsAvailability') || '{}')
         };
+        let products = {};
+        let currentEditId = null;
 
         // ===== تسجيل الدخول =====
         function handleLogin(event) {
@@ -638,13 +838,14 @@
 
             if (id === 'orders') {
                 loadOrders();
-            } else if (id === 'products') {
-                loadProducts();
+            } else if (id === 'products-manage') {
+                loadManagedProducts();
             }
         }
 
         // ===== تحميل بيانات لوحة التحكم =====
         function loadDashboardData() {
+            loadProducts();
             const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
             
             document.getElementById('totalOrders').textContent = orders.length;
@@ -655,6 +856,70 @@
 
             document.getElementById('orderToggle').checked = dashboardData.ordersOpen;
             document.getElementById('emailToggle').checked = dashboardData.emailNotifications;
+        }
+
+        // ===== تحميل المنتجات =====
+        function loadProducts() {
+            try {
+                const saved = localStorage.getItem('cozProducts');
+                if (saved) {
+                    products = JSON.parse(saved);
+                } else {
+                    initializeDefaultProducts();
+                }
+            } catch (e) {
+                initializeDefaultProducts();
+            }
+        }
+
+        function initializeDefaultProducts() {
+            products = {
+                V60: {
+                    labelAr: '☕ V60',
+                    labelEn: '☕ V60',
+                    items: [
+                        { id: 1, nameAr: 'لولي بوب 🍒', nameEn: 'Lollipop 🍒', image: 'images/Lollipop .PNG', price: 26 },
+                        { id: 2, nameAr: 'سنيكرز', nameEn: 'Snickers', image: 'images/Snickers .PNG', price: 26 },
+                        { id: 3, nameAr: 'توباكو', nameEn: 'Tobacco', image: 'images/Tobacco .PNG', price: 26 },
+                        { id: 4, nameAr: 'كريم بورليه', nameEn: 'Crème brûlée', image: 'images/Creme.PNG', price: 26 }
+                    ]
+                },
+                ESPRESSO: {
+                    labelAr: '☕ ESPRESSO',
+                    labelEn: '☕ ESPRESSO',
+                    items: [
+                        { id: 5, nameAr: 'امريكانو مثلج', nameEn: 'Ice Americano', image: '', price: 17 },
+                        { id: 6, nameAr: 'اسبريسو بالرغوة', nameEn: 'Foame Espresso', image: 'images/Fome.PNG', price: 25 },
+                        { id: 7, nameAr: 'اسبريسو بالرغوة (شوكولاته غامقة)', nameEn: 'Dark Foame Espresso', image: '', price: 27 }
+                    ]
+                },
+                MATCHA: {
+                    labelAr: '🍵 ماتشا',
+                    labelEn: '🍵 MATCHA',
+                    items: [
+                        { id: 8, nameAr: 'ماتشا برغوة', nameEn: 'Foame Matcha', image: 'images/Matcha.PNG', price: 29 }
+                    ]
+                },
+                HIBISCUS: {
+                    labelAr: '🌺 كركديه',
+                    labelEn: '🌺 HIBISCUS',
+                    items: [
+                        { id: 9, nameAr: 'كركديه', nameEn: 'Hibiscus', image: '', price: 13 }
+                    ]
+                },
+                DESSERTS: {
+                    labelAr: '🍫 حلويات',
+                    labelEn: '🍫 Desserts',
+                    items: [
+                        { id: 10, nameAr: 'روكي رود – 2 قطعة', nameEn: 'RockyRoad – 2 pieces', image: 'images/Rocky road .jpg', price: 12 }
+                    ]
+                }
+            };
+            saveProducts();
+        }
+
+        function saveProducts() {
+            localStorage.setItem('cozProducts', JSON.stringify(products));
         }
 
         // ===== تحميل الطلبات =====
@@ -687,7 +952,6 @@
             });
         }
 
-        // ===== قبول الطلب =====
         function acceptOrder(orderId) {
             const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
             const order = orders.find(o => o.orderId === orderId);
@@ -700,7 +964,6 @@
             }
         }
 
-        // ===== إتمام الطلب =====
         function completeOrder(orderId) {
             const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
             const order = orders.find(o => o.orderId === orderId);
@@ -713,22 +976,145 @@
             }
         }
 
+        // ===== إدارة المنتجات =====
+        function loadManagedProducts() {
+            const grid = document.getElementById('managedProductsGrid');
+            grid.innerHTML = '';
+
+            Object.entries(products).forEach(([catKey, category]) => {
+                category.items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.innerHTML = `
+                        <h4>${item.nameAr}</h4>
+                        <p><strong>EN:</strong> ${item.nameEn}</p>
+                        <p><strong>السعر:</strong> ${item.price} AED</p>
+                        <p><strong>التصنيف:</strong> ${category.labelAr}</p>
+                        <div class="product-card-actions">
+                            <button class="btn btn-success" onclick="editProduct('${catKey}', ${item.id})">✏️ تعديل</button>
+                            <button class="btn btn-danger" onclick="deleteProduct('${catKey}', ${item.id})">🗑️ حذف</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            });
+        }
+
+        function openAddProductModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = 'إضافة منتج جديد';
+            document.getElementById('productForm').reset();
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        function editProduct(catKey, itemId) {
+            const category = products[catKey];
+            const item = category.items.find(i => i.id === itemId);
+
+            if (item) {
+                currentEditId = `${catKey}-${itemId}`;
+                document.getElementById('modalTitle').textContent = 'تعديل منتج';
+                document.getElementById('productNameAr').value = item.nameAr;
+                document.getElementById('productNameEn').value = item.nameEn;
+                document.getElementById('productPrice').value = item.price;
+                document.getElementById('productImage').value = item.image || '';
+                document.getElementById('productCategory').value = catKey;
+                document.getElementById('productModal').classList.add('active');
+            }
+        }
+
+        function saveProduct(event) {
+            event.preventDefault();
+
+            const nameAr = document.getElementById('productNameAr').value.trim();
+            const nameEn = document.getElementById('productNameEn').value.trim();
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const image = document.getElementById('productImage').value.trim();
+            const category = document.getElementById('productCategory').value;
+
+            if (!nameAr || !nameEn || !price || !category) {
+                showMessage('يرجى ملء جميع الحقول المطلوبة', 'error');
+                return;
+            }
+
+            if (currentEditId) {
+                const [catKey, itemId] = currentEditId.split('-');
+                const item = products[catKey].items.find(i => i.id === parseInt(itemId));
+                
+                if (item) {
+                    item.nameAr = nameAr;
+                    item.nameEn = nameEn;
+                    item.price = price;
+                    item.image = image;
+                    showMessage('✅ تم تحديث المنتج بنجاح', 'success');
+                }
+            } else {
+                if (!products[category]) {
+                    showMessage('فئة غير صحيحة', 'error');
+                    return;
+                }
+
+                const newId = Math.max(...Object.values(products).flatMap(cat => cat.items.map(i => i.id))) + 1;
+                products[category].items.push({
+                    id: newId,
+                    nameAr,
+                    nameEn,
+                    image,
+                    price
+                });
+
+                showMessage('✅ تم إضافة المنتج بنجاح', 'success');
+            }
+
+            saveProducts();
+            closeProductModal();
+            loadManagedProducts();
+        }
+
+        function deleteProduct(catKey, itemId) {
+            if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
+                const category = products[catKey];
+                const index = category.items.findIndex(i => i.id === itemId);
+
+                if (index !== -1) {
+                    category.items.splice(index, 1);
+                    saveProducts();
+                    loadManagedProducts();
+                    showMessage('✅ تم حذف المنتج بنجاح', 'success');
+                }
+            }
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.remove('active');
+            currentEditId = null;
+        }
+
+        function showMessage(text, type) {
+            const container = document.getElementById('messageContainer');
+            const msg = document.createElement('div');
+            msg.className = `message ${type}`;
+            msg.textContent = text;
+            container.innerHTML = '';
+            container.appendChild(msg);
+
+            setTimeout(() => {
+                msg.remove();
+            }, 3000);
+        }
+
         // ===== فتح/إغلاق الطلبات =====
         function toggleOrders() {
             dashboardData.ordersOpen = document.getElementById('orderToggle').checked;
             localStorage.setItem('ordersOpen', dashboardData.ordersOpen);
-            alert(dashboardData.ordersOpen ? '✓ الطلبات مفتوحة' : '✓ الطلبات مغلقة');
         }
 
-        // ===== تفعيل الإشعارات =====
         function toggleEmail() {
             dashboardData.emailNotifications = document.getElementById('emailToggle').checked;
             localStorage.setItem('emailNotifications', dashboardData.emailNotifications);
-            alert(dashboardData.emailNotifications ? '✓ الإشعارات مفعلة' : '✓ الإشعارات معطلة');
         }
 
-        // ===== تحميل المنتجات =====
-        function loadProducts() {
+        function loadProductsAvailability() {
             const products = [
                 { id: 1, name: 'لولي بوب 🍒' },
                 { id: 2, name: 'سنيكرز' },
@@ -745,11 +1131,9 @@
             const grid = document.getElementById('productsGrid');
             grid.innerHTML = '';
             
-            // إعادة تحميل البيانات من localStorage
             dashboardData.productsAvailability = JSON.parse(localStorage.getItem('productsAvailability') || '{}');
 
             products.forEach(product => {
-                // إذا لم تكن موجودة، تكون متوفرة افتراضياً
                 const available = dashboardData.productsAvailability[product.id] !== false;
                 const item = document.createElement('div');
                 item.className = 'product-item';
@@ -766,24 +1150,18 @@
                 `;
                 grid.appendChild(item);
             });
+
+            document.getElementById('availabilityCard').style.display = 'block';
         }
 
-        // ===== تغيير توفر المنتج =====
         function toggleProduct(productId) {
-            // الحصول على الحالة الحالية
             const current = dashboardData.productsAvailability[productId];
-            
-            // عكس الحالة
             dashboardData.productsAvailability[productId] = current === false ? true : false;
-            
-            // حفظ في localStorage
             localStorage.setItem('productsAvailability', JSON.stringify(dashboardData.productsAvailability));
-            
-            // إعادة رسم المنتجات
-            loadProducts();
+            loadProductsAvailability();
         }
 
-        // ===== التحقق من تسجيل الدخول عند تحميل الصفحة =====
+        // ===== التحقق من تسجيل الدخول =====
         window.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('dashboardLogged') === 'true') {
                 document.getElementById('loginPage').style.display = 'none';
@@ -791,6 +1169,13 @@
                 loadDashboardData();
             } else {
                 document.getElementById('loginPage').style.display = 'block';
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('productModal');
+            if (e.target === modal) {
+                closeProductModal();
             }
         });
     </script>
