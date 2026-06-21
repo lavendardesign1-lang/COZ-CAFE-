@@ -277,6 +277,7 @@
             width: 100%;
             border: none;
             border-radius: 8px;
+            min-height: 600px;
         }
 
         @media (max-width: 768px) {
@@ -397,7 +398,7 @@
                 id="ziina-checkout"
                 frameborder="0"
                 allow="payment"
-                style="height: 820px;">
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups">
             </iframe>
         </div>
     </div>
@@ -408,12 +409,13 @@
         let cart = [];
         let deliveryFee = 0;
         let currentOrder = null;
+        let paymentCheckInterval = null;
 
         // تحميل السلة عند فتح الصفحة
         window.addEventListener('DOMContentLoaded', () => {
             loadCart();
             renderCart();
-            setupZiinaListener();
+            setupPaymentMonitor();
         });
 
         // تحميل السلة من localStorage
@@ -488,7 +490,7 @@
             await createZiinaPayment(name, phone, carNumber);
         }
 
-        // إنشاء دفع عبر Ziina API
+        // إنشاء دفع عبر Ziina
         async function createZiinaPayment(name, phone, carNumber) {
             showLoading(true);
             hideMessages();
@@ -515,27 +517,21 @@
                 // حفظ الطلب في cozOrders فوري
                 saveOrder(currentOrder);
 
-                // محاولة إنشاء payment intent عبر API
-                const paymentIntentUrl = await createPaymentIntent(orderId, total, name, phone);
+                // استخدام رابط الدفع المباشر من Ziina
+                const paymentLink = createPaymentLink(currentOrder);
                 
-                if (paymentIntentUrl) {
-                    // عرض iframe الدفع
-                    loadZiinaCheckout(paymentIntentUrl);
-                    showLoading(false);
-                    document.getElementById('ziinaContainer').classList.add('active');
-                    
-                    // Scroll to iframe
-                    setTimeout(() => {
-                        document.getElementById('ziinaContainer').scrollIntoView({ behavior: 'smooth' });
-                    }, 500);
-                } else {
-                    // الطريقة البديلة: استخدام رابط الدفع المباشر
-                    const paymentLink = createPaymentLink(currentOrder);
-                    showSuccess('جاري التوجيه لصفحة الدفع...');
-                    setTimeout(() => {
-                        window.location.href = paymentLink;
-                    }, 1000);
-                }
+                // عرض iframe الدفع
+                loadZiinaCheckout(paymentLink);
+                showLoading(false);
+                document.getElementById('ziinaContainer').classList.add('active');
+                
+                // ابدأ مراقبة الدفع
+                startPaymentMonitoring();
+                
+                // Scroll to iframe
+                setTimeout(() => {
+                    document.getElementById('ziinaContainer').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
 
             } catch (error) {
                 showLoading(false);
@@ -544,72 +540,42 @@
             }
         }
 
-        // إنشاء Payment Intent عبر API
-        async function createPaymentIntent(orderId, amount, name, phone) {
-            try {
-                const response = await fetch('https://api-v2.ziina.com/api/payment-intent', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${ZIINA_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        amount: amount,
-                        currency: 'AED',
-                        description: `COZ CAFE Order ${orderId}`,
-                        customer: {
-                            name: name,
-                            phone: phone
-                        },
-                        metadata: {
-                            order_id: orderId
-                        }
-                    })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    return data.embedded_url || null;
-                }
-                return null;
-            } catch (e) {
-                console.error('API Error:', e);
-                return null;
-            }
-        }
-
-        // تحميل Ziina Checkout
-        function loadZiinaCheckout(embeddedUrl) {
-            const iframe = document.getElementById('ziina-checkout');
-            iframe.src = embeddedUrl + '?version=latest&locale=ar';
-        }
-
-        // إنشاء رابط الدفع (الطريقة البديلة)
+        // إنشاء رابط الدفع
         function createPaymentLink(orderData) {
             const params = new URLSearchParams({
                 amount: orderData.total,
                 customer_name: orderData.name,
                 customer_phone: orderData.phone,
                 order_id: orderData.orderId,
-                description: 'COZ CAFE Order',
-                redirect_url: window.location.origin + window.location.pathname.replace('payment.html', 'success.html') + '?order=' + orderData.orderId
+                description: `COZ CAFE - ${orderData.items.map(i => i.name).join(', ')}`,
             });
 
             return 'https://pay.ziina.com/ar/sharjha11/?' + params.toString();
         }
 
-        // استقبال رسائل من Ziina iframe
-        function setupZiinaListener() {
+        // تحميل Ziina Checkout
+        function loadZiinaCheckout(paymentLink) {
+            const iframe = document.getElementById('ziina-checkout');
+            iframe.src = paymentLink;
+        }
+
+        // مراقبة حالة الدفع
+        function setupPaymentMonitor() {
+            // استقبال رسائل من iframe
             window.addEventListener('message', function(event) {
-                // التحقق من مصدر الرسالة
-                if (event.origin !== 'https://pay.ziina.com') return;
+                console.log('Message received:', event);
+                
+                // فقط من Ziina
+                if (event.origin && !event.origin.includes('ziina')) {
+                    return;
+                }
 
                 const { type, data } = event.data || {};
 
                 if (type === 'PAYMENT_STATUS_CHANGE') {
-                    console.log('Payment Status:', data.status);
+                    console.log('Payment Status:', data);
 
-                    if (data.status === 'COMPLETED') {
+                    if (data.status === 'COMPLETED' || data.status === 'SUCCESS') {
                         handlePaymentSuccess();
                     } else if (data.status === 'FAILED') {
                         handlePaymentFailure();
@@ -618,15 +584,56 @@
             });
         }
 
+        // بدء مراقبة الدفع (polling)
+        function startPaymentMonitoring() {
+            let attempts = 0;
+            const maxAttempts = 120; // 10 دقائق (120 × 5 ثواني)
+
+            paymentCheckInterval = setInterval(() => {
+                attempts++;
+
+                // فقط للتطوير: check في localStorage
+                try {
+                    const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                    const updatedOrder = orders.find(o => o.orderId === currentOrder.orderId);
+                    
+                    if (updatedOrder && (updatedOrder.status === 'completed' || updatedOrder.status === 'confirmed')) {
+                        handlePaymentSuccess();
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Error checking status:', e);
+                }
+
+                // انتهي بعد ما المدة تنتهي
+                if (attempts >= maxAttempts) {
+                    stopPaymentMonitoring();
+                    showError('انتهت المهلة الزمنية. الرجاء المحاولة مجدداً.');
+                }
+            }, 5000);
+        }
+
+        // إيقاف مراقبة الدفع
+        function stopPaymentMonitoring() {
+            if (paymentCheckInterval) {
+                clearInterval(paymentCheckInterval);
+                paymentCheckInterval = null;
+            }
+        }
+
         // معالجة نجاح الدفع
         function handlePaymentSuccess() {
+            stopPaymentMonitoring();
+            
             if (currentOrder) {
                 // تحديث حالة الطلب
                 currentOrder.status = 'completed';
                 saveOrder(currentOrder);
                 localStorage.setItem('lastOrder', JSON.stringify(currentOrder));
                 
-                // توجيه لصفحة النجاح
+                showSuccess('✅ تم الدفع بنجاح! جاري التوجيه...');
+                
+                // توجيه لصفحة النجاح بعد ثانية
                 setTimeout(() => {
                     window.location.href = `success.html?order=${currentOrder.orderId}`;
                 }, 1500);
@@ -635,9 +642,9 @@
 
         // معالجة فشل الدفع
         function handlePaymentFailure() {
+            stopPaymentMonitoring();
             showError('فشل الدفع. الرجاء المحاولة مجدداً.');
             document.getElementById('ziinaContainer').classList.remove('active');
-            showLoading(false);
         }
 
         // حفظ الطلب
@@ -697,6 +704,7 @@
         // العودة للخلف
         function goBack() {
             if (confirm('هل تريد إلغاء العملية والعودة للسلة؟')) {
+                stopPaymentMonitoring();
                 window.location.href = 'index.html';
             }
         }
@@ -709,6 +717,11 @@
                     window.location.href = 'index.html';
                 }, 2000);
             }
+        });
+
+        // تنظيف عند إغلاق الصفحة
+        window.addEventListener('beforeunload', () => {
+            stopPaymentMonitoring();
         });
     </script>
 </body>
