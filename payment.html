@@ -382,6 +382,9 @@
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <script>
         let cart = [];
         let deliveryFee = 0;
@@ -468,14 +471,32 @@
                 return;
             }
 
-            // التحقق من فتح الطلبات
-            const ordersOpen = localStorage.getItem('ordersOpen') !== 'false';
-            if (!ordersOpen) {
-                showError('آسف! الطلبات مغلقة حالياً');
-                return;
+            // التحقق من فتح الطلبات (Firebase أولاً ثم localStorage)
+            if (typeof db !== 'undefined') {
+                db.ref('settings/ordersOpen').once('value').then(snapshot => {
+                    const firebaseVal = snapshot.val();
+                    const ordersOpen = firebaseVal !== false;
+                    if (!ordersOpen) {
+                        showError('آسف! الطلبات مغلقة حالياً');
+                        return;
+                    }
+                    createPayment(name, phone, carNumber);
+                }).catch(() => {
+                    const ordersOpen = localStorage.getItem('ordersOpen') !== 'false';
+                    if (!ordersOpen) {
+                        showError('آسف! الطلبات مغلقة حالياً');
+                        return;
+                    }
+                    createPayment(name, phone, carNumber);
+                });
+            } else {
+                const ordersOpen = localStorage.getItem('ordersOpen') !== 'false';
+                if (!ordersOpen) {
+                    showError('آسف! الطلبات مغلقة حالياً');
+                    return;
+                }
+                createPayment(name, phone, carNumber);
             }
-
-            createPayment(name, phone, carNumber);
         }
 
         // إنشاء الطلب والدفع
@@ -543,6 +564,13 @@
                 }
                 
                 localStorage.setItem('cozOrders', JSON.stringify(orders));
+
+                // حفظ في Firebase
+                if (typeof db !== 'undefined') {
+                    db.ref('orders/' + orderData.orderId).set(orderData)
+                        .catch(e => console.error('Firebase order save error:', e));
+                }
+
                 console.log('✅ Order saved:', orderData.orderId);
             } catch (e) {
                 console.error('Error saving order:', e);
