@@ -31,51 +31,8 @@ function changeLanguage(lang) {
 }
 
 // ===== بيانات المنتجات =====
-const productsAr = {
-    V60: {
-        labelAr: '☕ V60',
-        labelEn: '☕ V60',
-        mainImage: 'images/V60.PNG',
-        items: [
-            { id: 1, nameAr: 'لولي بوب 🍒', nameEn: 'Lollipop 🍒', image: 'images/Lollipop .PNG', price: 26 },
-            { id: 2, nameAr: 'سنيكرز', nameEn: 'Snickers', image: 'images/Snickers .PNG', price: 26 },
-            { id: 3, nameAr: 'توباكو', nameEn: 'Tobacco', image: 'images/Tobacco .PNG', price: 26 },
-            { id: 4, nameAr: 'كريم بورليه', nameEn: 'Crème brûlée', image: 'images/Creme.PNG', price: 26 }
-        ]
-    },
-    ESPRESSO: {
-        labelAr: '☕ ESPRESSO',
-        labelEn: '☕ ESPRESSO',
-        items: [
-            { id: 5, nameAr: 'امريكانو مثلج', nameEn: 'Ice Americano', image: '', price: 17 },
-            { id: 6, nameAr: 'اسبريسو بالرغوة', nameEn: 'Foame Espresso', image: 'images/Fome.PNG', price: 25 },
-            { id: 7, nameAr: 'اسبريسو بالرغوة (شوكولاته غامقة)', nameEn: 'Dark Foame Espresso', image: '', price: 27 }
-        ]
-    },
-    MATCHA: {
-        labelAr: '🍵 ماتشا',
-        labelEn: '🍵 MATCHA',
-        items: [
-            { id: 8, nameAr: 'ماتشا برغوة', nameEn: 'Foame Matcha', image: 'images/Matcha.PNG', price: 29, coconutOption: true }
-        ]
-    },
-    HIBISCUS: {
-        labelAr: '🌺 كركديه',
-        labelEn: '🌺 HIBISCUS',
-        items: [
-            { id: 9, nameAr: 'كركديه', nameEn: 'Hibiscus', image: '', price: 13 }
-        ]
-    },
-    DESSERTS: {
-        labelAr: '🍫 حلويات',
-        labelEn: '🍫 Desserts',
-        items: [
-            { id: 10, nameAr: 'روكي رود – 2 قطعة', nameEn: 'RockyRoad – 2 pieces', image: 'images/Rocky road .jpg', price: 12 }
-        ]
-    }
-};
+let products = {};
 
-let products = productsAr;
 let cart = [];
 
 // ===== Ziina Configuration =====
@@ -87,6 +44,7 @@ const ZIINA_CONFIG = {
 // ===== تهيئة =====
 function init() {
     loadLang();
+    loadProducts();
     loadCart();
     renderProducts();
     setupLanguageButtons();
@@ -103,6 +61,71 @@ function setupLanguageButtons() {
             changeLanguage(btn.getAttribute('data-lang'));
         });
     });
+}
+
+// ===== تحميل المنتجات من localStorage =====
+function loadProducts() {
+    try {
+        const saved = localStorage.getItem('cozProducts');
+        if (saved) {
+            products = JSON.parse(saved);
+            console.log('✅ تم تحميل المنتجات من localStorage');
+        } else {
+            // استخدام المنتجات الافتراضية
+            initializeDefaultProducts();
+        }
+    } catch (e) {
+        console.error('Error loading products:', e);
+        initializeDefaultProducts();
+    }
+}
+
+// ===== المنتجات الافتراضية =====
+function initializeDefaultProducts() {
+    products = {
+        V60: {
+            labelAr: '☕ V60',
+            labelEn: '☕ V60',
+            mainImage: 'images/V60.PNG',
+            items: [
+                { id: 1, nameAr: 'لولي بوب 🍒', nameEn: 'Lollipop 🍒', image: 'images/Lollipop .PNG', price: 26 },
+                { id: 2, nameAr: 'سنيكرز', nameEn: 'Snickers', image: 'images/Snickers .PNG', price: 26 },
+                { id: 3, nameAr: 'توباكو', nameEn: 'Tobacco', image: 'images/Tobacco .PNG', price: 26 },
+                { id: 4, nameAr: 'كريم بورليه', nameEn: 'Crème brûlée', image: 'images/Creme.PNG', price: 26 }
+            ]
+        },
+        ESPRESSO: {
+            labelAr: '☕ ESPRESSO',
+            labelEn: '☕ ESPRESSO',
+            items: [
+                { id: 5, nameAr: 'امريكانو مثلج', nameEn: 'Ice Americano', image: '', price: 17 },
+                { id: 6, nameAr: 'اسبريسو بالرغوة', nameEn: 'Foame Espresso', image: 'images/Fome.PNG', price: 25 },
+                { id: 7, nameAr: 'اسبريسو بالرغوة (شوكولاته غامقة)', nameEn: 'Dark Foame Espresso', image: '', price: 27 }
+            ]
+        },
+        MATCHA: {
+            labelAr: '🍵 ماتشا',
+            labelEn: '🍵 MATCHA',
+            items: [
+                { id: 8, nameAr: 'ماتشا برغوة', nameEn: 'Foame Matcha', image: 'images/Matcha.PNG', price: 29, coconutOption: true }
+            ]
+        },
+        HIBISCUS: {
+            labelAr: '🌺 كركديه',
+            labelEn: '🌺 HIBISCUS',
+            items: [
+                { id: 9, nameAr: 'كركديه', nameEn: 'Hibiscus', image: '', price: 13 }
+            ]
+        },
+        DESSERTS: {
+            labelAr: '🍫 حلويات',
+            labelEn: '🍫 Desserts',
+            items: [
+                { id: 10, nameAr: 'روكي رود – 2 قطعة', nameEn: 'RockyRoad – 2 pieces', image: 'images/Rocky road .jpg', price: 12 }
+            ]
+        }
+    };
+    console.log('✅ تم تحميل المنتجات الافتراضية');
 }
 
 // ===== التحقق من توفر المنتج =====
