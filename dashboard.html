@@ -23,23 +23,35 @@
         }
 
         .sidebar {
-            width: 250px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 80px;
+            background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
             color: white;
-            padding: 25px;
+            padding: 15px;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
             left: 0;
             top: 0;
+            z-index: 1000;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar:hover {
+            width: 250px;
         }
 
         .sidebar h2 {
-            margin-bottom: 30px;
-            font-size: 20px;
+            margin-bottom: 20px;
+            font-size: 16px;
             text-align: center;
             border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-            padding-bottom: 15px;
+            padding-bottom: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar:hover h2 {
+            opacity: 1;
         }
 
         .sidebar ul {
@@ -54,25 +66,41 @@
             color: white;
             text-decoration: none;
             display: block;
-            padding: 12px 15px;
+            padding: 12px 12px;
             border-radius: 8px;
             transition: all 0.3s ease;
             cursor: pointer;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            font-size: 12px;
+        }
+
+        .sidebar:hover a {
+            text-align: right;
+            padding: 12px 15px;
+            font-size: 14px;
         }
 
         .sidebar a:hover,
         .sidebar a.active {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
 
         .main-content {
-            margin-right: 250px;
+            margin-right: 80px;
             flex: 1;
             padding: 30px;
+            transition: margin-right 0.3s ease;
+        }
+
+        .sidebar:hover ~ .main-content {
+            margin-right: 250px;
         }
 
         .header {
-            background: white;
+            background: linear-gradient(135deg, #D2B48C 0%, #8B6914 100%);
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 30px;
@@ -80,15 +108,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            color: white;
         }
 
         .header h1 {
             font-size: 24px;
-            color: #333;
+            color: white;
         }
 
         .logout-btn {
-            background: #f44336;
+            background: #8B6914;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -98,7 +127,7 @@
         }
 
         .logout-btn:hover {
-            background: #d32f2f;
+            background: #654321;
         }
 
         .section {
@@ -118,7 +147,7 @@
         }
 
         .card h2 {
-            color: #667eea;
+            color: #8B6914;
             margin-bottom: 20px;
             font-size: 18px;
         }
@@ -137,7 +166,8 @@
             padding: 12px;
             text-align: right;
             font-weight: 600;
-            border-bottom: 2px solid #ddd;
+            border-bottom: 2px solid #D2B48C;
+            color: #8B6914;
         }
 
         td {
@@ -183,10 +213,11 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-right: 4px solid #D2B48C;
         }
 
         .control-item h3 {
-            color: #333;
+            color: #8B6914;
             margin-bottom: 15px;
             font-size: 16px;
         }
@@ -229,7 +260,7 @@
         }
 
         input:checked + .slider {
-            background-color: #4CAF50;
+            background-color: #8B6914;
         }
 
         input:checked + .slider:before {
@@ -248,18 +279,21 @@
             padding: 15px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-right: 3px solid #D2B48C;
         }
 
         .product-item h4 {
-            color: #333;
+            color: #8B6914;
             margin-bottom: 10px;
             font-size: 14px;
+            font-weight: 600;
         }
 
         .product-status {
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-bottom: 10px;
         }
 
         .status-indicator {
@@ -288,12 +322,12 @@
         }
 
         .btn-primary {
-            background: #667eea;
+            background: #8B6914;
             color: white;
         }
 
         .btn-primary:hover {
-            background: #5568d3;
+            background: #654321;
         }
 
         .btn-success {
@@ -314,6 +348,16 @@
             background: #da190b;
         }
 
+        .btn-disabled {
+            background: #999;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .btn-disabled:hover {
+            background: #999;
+        }
+
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -327,12 +371,13 @@
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
+            border-top: 4px solid #D2B48C;
         }
 
         .stat-card .number {
             font-size: 32px;
             font-weight: bold;
-            color: #667eea;
+            color: #8B6914;
         }
 
         .stat-card .label {
@@ -352,7 +397,7 @@
 
         .login-form h2 {
             text-align: center;
-            color: #667eea;
+            color: #8B6914;
             margin-bottom: 30px;
         }
 
@@ -363,28 +408,28 @@
         .form-group label {
             display: block;
             margin-bottom: 5px;
-            color: #333;
+            color: #8B6914;
             font-weight: 600;
         }
 
         .form-group input {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid #D2B48C;
             border-radius: 5px;
             font-size: 14px;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+            border-color: #8B6914;
+            box-shadow: 0 0 5px rgba(139, 105, 20, 0.3);
         }
 
         .login-btn {
             width: 100%;
             padding: 12px;
-            background: #667eea;
+            background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
             color: white;
             border: none;
             border-radius: 5px;
@@ -395,17 +440,16 @@
         }
 
         .login-btn:hover {
-            background: #5568d3;
+            background: linear-gradient(135deg, #654321 0%, #C19A6B 100%);
         }
 
         @media (max-width: 768px) {
             .sidebar {
-                width: 200px;
+                width: 60px;
             }
 
             .main-content {
-                margin-right: 0;
-                padding: 15px;
+                margin-right: 60px;
             }
 
             .header {
@@ -433,17 +477,17 @@
         <div class="sidebar">
             <h2>☕ COZ CAFE</h2>
             <ul>
-                <li><a onclick="showSection('dashboard')">📊 لوحة التحكم</a></li>
-                <li><a onclick="showSection('orders')">📦 الطلبات</a></li>
-                <li><a onclick="showSection('controls')">⚙️ التحكم</a></li>
-                <li><a onclick="showSection('products')">🍵 المنتجات</a></li>
-                <li><a onclick="logout()">🚪 تسجيل الخروج</a></li>
+                <li><a onclick="showSection('dashboard')">📊</a></li>
+                <li><a onclick="showSection('orders')">📦</a></li>
+                <li><a onclick="showSection('controls')">⚙️</a></li>
+                <li><a onclick="showSection('products')">🍵</a></li>
+                <li><a onclick="logout()">🚪</a></li>
             </ul>
         </div>
 
         <div class="main-content">
             <div class="header">
-                <h1>لوحة التحكم</h1>
+                <h1>☕ لوحة التحكم - COZ CAFE</h1>
                 <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
             </div>
 
@@ -523,7 +567,7 @@
                         <p style="color: #666; margin-bottom: 15px; font-size: 14px;">
                             رابط الموقع الخاص بك
                         </p>
-                        <input type="text" value="https://lavendardesign1-lang.github.io/COZ-CAFE-/" readonly style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                        <input type="text" value="https://lavendardesign1-lang.github.io/COZ-CAFE-/" readonly style="width: 100%; padding: 8px; border: 1px solid #D2B48C; border-radius: 5px;">
                     </div>
                 </div>
             </div>
@@ -699,9 +743,10 @@
                         <span class="status-indicator ${available ? 'available' : 'unavailable'}"></span>
                         <span>${available ? 'متوفر' : 'غير متوفر'}</span>
                     </div>
-                    <button class="btn ${available ? 'btn-danger' : 'btn-success'}" 
-                            onclick="toggleProduct(${product.id})">
-                        ${available ? 'عدم التوفر' : 'توفر'}
+                    <button class="btn ${available ? 'btn-danger' : 'btn-disabled'}" 
+                            onclick="${available ? `toggleProduct(${product.id})` : 'return false'}"
+                            ${available ? '' : 'disabled'}>
+                        ${available ? 'عدم التوفر' : '+ Add'}
                     </button>
                 `;
                 grid.appendChild(item);
