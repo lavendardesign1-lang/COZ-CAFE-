@@ -180,6 +180,7 @@
             display: flex;
             gap: 10px;
             margin-top: 20px;
+            flex-direction: column-reverse;
         }
 
         .btn {
@@ -271,7 +272,7 @@
             }
 
             .button-group {
-                flex-direction: column;
+                flex-direction: column-reverse;
             }
 
             .cart-items {
@@ -361,7 +362,7 @@
 
                 <div class="button-group">
                     <button type="button" class="btn btn-cancel" onclick="goBack()">إلغاء</button>
-                    <button type="submit" form="paymentForm" class="btn btn-pay" id="payBtn">ادفع الآن</button>
+                    <button type="submit" form="paymentForm" class="btn btn-pay" id="payBtn">💳 ادفع الآن</button>
                 </div>
 
                 <div class="info-box" style="margin-top: 15px;">
@@ -486,7 +487,7 @@
                 
                 showSuccess('جاري التوجيه لصفحة الدفع الآمنة...');
                 
-                // توجيه مباشر لـ Ziina
+                // توجيه مباشر لـ Ziina بعد 1.5 ثانية
                 setTimeout(() => {
                     window.location.href = paymentLink;
                 }, 1500);
@@ -500,7 +501,7 @@
 
         // إنشاء رابط الدفع
         function createPaymentLink(orderData) {
-            // الرابط الكامل لصفحة الدفع
+            // الرابط الكامل لصفحة النجاح
             const redirectUrl = window.location.origin + window.location.pathname.replace('payment.html', 'success.html') + '?order=' + orderData.orderId;
             
             const params = new URLSearchParams({
