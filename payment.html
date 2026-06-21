@@ -221,6 +221,16 @@
             transform: none;
         }
 
+        .btn-check {
+            background: #17a2b8;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-check:hover {
+            background: #138496;
+        }
+
         .error-message {
             background: #f8d7da;
             color: #721c24;
@@ -365,8 +375,17 @@
                     <button type="submit" form="paymentForm" class="btn btn-pay" id="payBtn">💳 ادفع الآن</button>
                 </div>
 
+                <!-- زر تحقق من الدفع -->
+                <button type="button" class="btn btn-check" id="checkPaymentBtn" onclick="checkPaymentStatus()" style="display: none;">
+                    ✓ تحقق من الدفع والعودة
+                </button>
+
                 <div class="info-box" style="margin-top: 15px;">
                     <strong>✓ آمن تماماً:</strong> جميع المعاملات محمية بأعلى معايير الأمان
+                </div>
+
+                <div class="info-box" style="margin-top: 10px; background: #e7f3ff; border-right-color: #17a2b8;">
+                    <strong>💡 ملاحظة:</strong> صفحة الدفع ستفتح في تبويب جديد. بعد الانتهاء من الدفع، اضغط على "تحقق من الدفع والعودة"
                 </div>
             </div>
         </div>
@@ -376,7 +395,7 @@
         let cart = [];
         let deliveryFee = 0;
         let currentOrder = null;
-        let pollingTimeout = null;
+        let paymentWindowOpened = false;
 
         // تحميل السلة عند فتح الصفحة
         window.addEventListener('DOMContentLoaded', () => {
@@ -452,7 +471,7 @@
                 return;
             }
 
-            // إنشاء بيانات الطلب
+            // إنشاء الدفع
             createPayment(name, phone, carNumber);
         }
 
@@ -487,60 +506,26 @@
                 // إنشاء رابط الدفع
                 const paymentLink = createPaymentLink(currentOrder);
                 
-                showSuccess('جاري التوجيه لصفحة الدفع الآمنة...');
+                showSuccess('جاري فتح صفحة الدفع الآمنة...');
                 
-                // بدء polling لتحديث حالة الطلب
-                startPolling(orderId);
-                
-                // توجيه مباشر لـ Ziina بعد 1.5 ثانية
+                // فتح Ziina في تبويب جديد
                 setTimeout(() => {
-                    window.location.href = paymentLink;
-                }, 1500);
+                    window.open(paymentLink, '_blank');
+                    paymentWindowOpened = true;
+                    
+                    // إظهار زر التحقق من الدفع
+                    showLoading(false);
+                    document.getElementById('checkPaymentBtn').style.display = 'block';
+                    document.getElementById('payBtn').style.display = 'none';
+                    
+                    showSuccess('✓ تم فتح صفحة الدفع في تبويب جديد. بعد الانتهاء، اضغط على "تحقق من الدفع والعودة"');
+                }, 500);
 
             } catch (error) {
                 showLoading(false);
                 showError('حدث خطأ: ' + error.message);
                 console.error('Payment error:', error);
             }
-        }
-
-        // بدء polling لتحديث حالة الطلب
-        function startPolling(orderId) {
-            let attempts = 0;
-            const maxAttempts = 600; // 10 دقائق (600 ثانية ÷ 1 ثانية)
-
-            const checkOrderStatus = () => {
-                attempts++;
-                
-                try {
-                    const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
-                    const order = orders.find(o => o.orderId === orderId);
-
-                    if (order && order.status === 'completed') {
-                        // الطلب تم دفعه بنجاح!
-                        clearTimeout(pollingTimeout);
-                        localStorage.setItem('lastOrder', JSON.stringify(order));
-                        window.location.href = 'success.html?order=' + orderId;
-                        return;
-                    }
-
-                    // إذا مازال معلق، استمر في الفحص
-                    if (attempts < maxAttempts) {
-                        pollingTimeout = setTimeout(checkOrderStatus, 1000); // كل ثانية
-                    } else {
-                        // انتهى الانتظار، لم يتم الدفع
-                        clearTimeout(pollingTimeout);
-                        console.log('⏱️ انتهت فترة الانتظار');
-                    }
-                } catch (e) {
-                    console.error('Polling error:', e);
-                    if (attempts < maxAttempts) {
-                        pollingTimeout = setTimeout(checkOrderStatus, 1000);
-                    }
-                }
-            };
-
-            pollingTimeout = setTimeout(checkOrderStatus, 1000);
         }
 
         // إنشاء رابط الدفع
@@ -558,6 +543,29 @@
             });
 
             return 'https://pay.ziina.com/ar/sharjha11/?' + params.toString();
+        }
+
+        // التحقق من حالة الدفع والعودة
+        function checkPaymentStatus() {
+            if (!currentOrder) {
+                showError('لم يتم العثور على بيانات الطلب');
+                return;
+            }
+
+            try {
+                const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                const order = orders.find(o => o.orderId === currentOrder.orderId);
+
+                if (order) {
+                    // الطلب موجود، انتقل لصفحة التتبع
+                    localStorage.setItem('lastOrder', JSON.stringify(order));
+                    window.location.href = 'tracking.html?order=' + order.orderId;
+                } else {
+                    showError('لم يتم العثور على الطلب. تأكد من اكتمال الدفع');
+                }
+            } catch (e) {
+                showError('حدث خطأ: ' + e.message);
+            }
         }
 
         // حفظ الطلب
@@ -617,7 +625,6 @@
         // العودة للخلف
         function goBack() {
             if (confirm('هل تريد إلغاء العملية والعودة للسلة؟')) {
-                clearTimeout(pollingTimeout);
                 window.location.href = 'index.html';
             }
         }
@@ -630,11 +637,6 @@
                     window.location.href = 'index.html';
                 }, 2000);
             }
-        });
-
-        // تنظيف عند الخروج
-        window.addEventListener('beforeunload', () => {
-            clearTimeout(pollingTimeout);
         });
     </script>
 </body>
