@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تم الغاء الطلب - COZ CAFE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .cancel-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .cancel-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+            background: #f44336;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .cancel-reason {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .order-info {
+            background: #fff3e0;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: right;
+            border-right: 4px solid #ff9800;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .warning-box {
+            background: #ffebee;
+            border-right: 4px solid #f44336;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: right;
+        }
+
+        .warning-box h3 {
+            color: #f44336;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .warning-box p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .faq-section {
+            background: #f9f9f9;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        .faq-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .faq-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .faq-item h4 {
+            color: #2196F3;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .faq-item p {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .cancel-container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cancel-container">
+        <div class="cancel-icon">✕</div>
+        
+        <h1>تم الغاء الطلب</h1>
+        <div class="cancel-reason">
+            للأسف، تم الغاء طلبك
+        </div>
+
+        <div class="order-info">
+            <div class="info-row">
+                <span class="info-label">رقم الطلب:</span>
+                <span class="info-value" id="orderId">---</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">الحالة:</span>
+                <span class="info-value" style="color: #f44336;">✕ تم الالغاء</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">وقت الالغاء:</span>
+                <span class="info-value" id="cancelTime">للتو</span>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <h3>⚠️ ملاحظة مهمة</h3>
+            <p>
+                إذا تم خصم المبلغ من حسابك، سيتم استرجاع الأموال في خلال 3-5 أيام عمل إلى حسابك البنكي.
+            </p>
+        </div>
+
+        <div class="faq-section">
+            <h3>❓ أسئلة شائعة</h3>
+            
+            <div class="faq-item">
+                <h4>لماذا تم الغاء الطلب؟</h4>
+                <p>قد يكون السبب أن المنتجات غير متوفرة حالياً أو انتهاء صلاحية جلسة الطلب.</p>
+            </div>
+
+            <div class="faq-item">
+                <h4>متى سأسترجع أموالي؟</h4>
+                <p>استرجاع الأموال يتم تلقائياً في خلال 3-5 أيام عمل من البنك الخاص بك.</p>
+            </div>
+
+            <div class="faq-item">
+                <h4>هل يمكنني إعادة محاولة الطلب؟</h4>
+                <p>نعم! يمكنك العودة والبدء من جديد. نرجو منك المحاولة لاحقاً.</p>
+            </div>
+
+            <div class="faq-item">
+                <h4>هل تحتاج مساعدة؟</h4>
+                <p>تواصل معنا عبر WhatsApp أو البريد الإلكتروني إذا واجهت أي مشاكل.</p>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="goHome()">العودة للرئيسية</button>
+            <button class="btn btn-secondary" onclick="startNewOrder()">طلب جديد</button>
+        </div>
+    </div>
+
+    <script>
+        // تحميل بيانات الطلب من localStorage
+        function loadCancelData() {
+            const lastOrder = JSON.parse(localStorage.getItem('lastOrder') || '{}');
+            
+            document.getElementById('orderId').textContent = lastOrder.orderId || '---';
+            
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ar-AE');
+            document.getElementById('cancelTime').textContent = timeStr;
+        }
+
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        function startNewOrder() {
+            // مسح السلة وإعادة تحديد
+            localStorage.removeItem('cozCart');
+            localStorage.removeItem('lastOrder');
+            window.location.href = 'index.html';
+        }
+
+        // تحميل البيانات عند فتح الصفحة
+        window.addEventListener('DOMContentLoaded', loadCancelData);
+    </script>
+</body>
+</html>
