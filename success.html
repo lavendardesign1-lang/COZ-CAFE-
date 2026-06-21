@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تم إتمام الطلب - COZ CAFE</title>
+    <title>تم الطلب بنجاح - COZ CAFE</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -24,166 +24,116 @@
         .success-container {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
             max-width: 600px;
             width: 100%;
-            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
         }
 
         .success-icon {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 30px;
-            background: #4CAF50;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 50px;
-            animation: scaleIn 0.5s ease-out;
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
         }
 
-        @keyframes scaleIn {
-            from {
-                transform: scale(0);
-            }
-            to {
-                transform: scale(1);
-            }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
 
         h1 {
-            color: #333;
+            color: #8B6914;
+            font-size: 32px;
             margin-bottom: 15px;
-            font-size: 28px;
         }
 
-        .order-id {
+        .subtitle {
             color: #666;
-            margin-bottom: 30px;
-            font-size: 16px;
-        }
-
-        .order-id strong {
-            color: #667eea;
             font-size: 18px;
-        }
-
-        .timeline {
-            background: #f9f9f9;
-            border-radius: 15px;
-            padding: 30px;
-            margin: 30px 0;
-            text-align: right;
-        }
-
-        .timeline-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .timeline-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .timeline-item:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            right: 15px;
-            top: 50px;
-            width: 2px;
-            height: 40px;
-            background: #ddd;
-        }
-
-        .timeline-dot {
-            width: 35px;
-            height: 35px;
-            background: #4CAF50;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            margin-right: 15px;
-            flex-shrink: 0;
-        }
-
-        .timeline-dot.pending {
-            background: #FF9800;
-        }
-
-        .timeline-dot.completed {
-            background: #4CAF50;
-        }
-
-        .timeline-text {
-            flex: 1;
-        }
-
-        .timeline-text h3 {
-            color: #333;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        .timeline-text p {
-            color: #999;
-            font-size: 13px;
+            margin-bottom: 30px;
+            line-height: 1.6;
         }
 
         .order-details {
-            background: #f0f4ff;
-            border-radius: 15px;
+            background: #f9f9f9;
             padding: 20px;
-            margin: 20px 0;
-            text-align: right;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-right: 4px solid #D2B48C;
         }
 
-        .details-row {
+        .detail-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 16px;
         }
 
-        .details-row:last-child {
-            margin-bottom: 0;
+        .detail-row:last-child {
             border-bottom: none;
-            padding-bottom: 0;
         }
 
-        .details-label {
+        .detail-label {
             color: #666;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            color: #8B6914;
+            font-weight: 700;
+        }
+
+        .order-items {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: right;
+            border-right: 4px solid #D2B48C;
+        }
+
+        .order-items h3 {
+            color: #8B6914;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
             font-size: 14px;
         }
 
-        .details-value {
-            color: #333;
-            font-weight: 600;
-            font-size: 15px;
+        .item:last-child {
+            border-bottom: none;
         }
 
-        .action-buttons {
+        .item-name {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .item-price {
+            color: #8B6914;
+            font-weight: 700;
+        }
+
+        .buttons {
             display: flex;
             gap: 15px;
-            margin-top: 30px;
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         .btn {
-            flex: 1;
-            min-width: 150px;
-            padding: 12px 25px;
+            padding: 14px 30px;
             border: none;
-            border-radius: 10px;
-            font-size: 15px;
+            border-radius: 8px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -192,46 +142,88 @@
         }
 
         .btn-primary {
-            background: #667eea;
+            background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
             color: white;
+            flex: 1;
+            min-width: 150px;
         }
 
         .btn-primary:hover {
-            background: #5568d3;
+            background: linear-gradient(135deg, #654321 0%, #C19A6B 100%);
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 15px rgba(139, 105, 20, 0.4);
         }
 
         .btn-secondary {
             background: #f0f0f0;
-            color: #333;
+            color: #8B6914;
+            flex: 1;
+            min-width: 150px;
+            border: 2px solid #D2B48C;
         }
 
         .btn-secondary:hover {
-            background: #e0e0e0;
+            background: #e8e8e8;
+            transform: translateY(-2px);
         }
 
-        .message {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-top: 20px;
+        .info-box {
+            background: #fffbf0;
             padding: 15px;
-            background: #e8f5e9;
-            border-right: 4px solid #4CAF50;
-            border-radius: 5px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-right: 3px solid #D2B48C;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
         }
 
-        @media (max-width: 600px) {
+        .info-box strong {
+            color: #8B6914;
+        }
+
+        .status {
+            display: inline-block;
+            background: #d4edda;
+            color: #155724;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .payment-status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .payment-status.pending {
+            background: #fff3cd;
+            color: #856404;
+            border-right: 3px solid #ffc107;
+        }
+
+        .timer {
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 768px) {
             .success-container {
-                padding: 25px;
+                padding: 30px 20px;
             }
 
             h1 {
-                font-size: 22px;
+                font-size: 26px;
             }
 
-            .action-buttons {
+            .buttons {
                 flex-direction: column;
             }
 
@@ -243,118 +235,122 @@
 </head>
 <body>
     <div class="success-container">
-        <div class="success-icon">✓</div>
+        <div class="success-icon">✅</div>
         
-        <h1>تم إتمام الطلب بنجاح! 🎉</h1>
-        <div class="order-id">
-            رقم الطلب: <strong id="orderId">---</strong>
+        <h1>تم الطلب بنجاح! 🎉</h1>
+        
+        <p class="subtitle">
+            شكراً لك على طلبك من COZ CAFE<br>
+            سيتم تحضير طلبك قريباً
+        </p>
+
+        <div class="status" id="paymentStatus">معلق</div>
+
+        <div id="orderDetails" class="order-details"></div>
+
+        <div id="orderItemsContainer" class="order-items" style="display: none;">
+            <h3>📋 تفاصيل الطلب</h3>
+            <div id="orderItemsList"></div>
         </div>
 
-        <div class="order-details">
-            <div class="details-row">
-                <span class="details-label">الاسم:</span>
-                <span class="details-value" id="customerName">---</span>
-            </div>
-            <div class="details-row">
-                <span class="details-label">الهاتف:</span>
-                <span class="details-value" id="customerPhone">---</span>
-            </div>
-            <div class="details-row">
-                <span class="details-label">العنوان:</span>
-                <span class="details-value" id="customerAddress">---</span>
-            </div>
-            <div class="details-row">
-                <span class="details-label">المجموع:</span>
-                <span class="details-value" id="totalAmount">0 AED</span>
-            </div>
-            <div class="details-row">
-                <span class="details-label">حالة الدفع:</span>
-                <span class="details-value" style="color: #4CAF50;">✓ تم الدفع</span>
-            </div>
+        <div class="payment-status pending" id="paymentInfo">
+            <strong>⏳ حالة الدفع:</strong> الطلب قيد المعالجة
         </div>
 
-        <div class="timeline">
-            <h3 style="margin-bottom: 25px; color: #333;">خط سير الطلب</h3>
-            
-            <div class="timeline-item">
-                <div class="timeline-dot completed">✓</div>
-                <div class="timeline-text">
-                    <h3>تم تقديم الطلب</h3>
-                    <p id="submittedTime">للتو</p>
-                </div>
-            </div>
-
-            <div class="timeline-item">
-                <div class="timeline-dot completed">✓</div>
-                <div class="timeline-text">
-                    <h3>تم إتمام الدفع</h3>
-                    <p id="paidTime">للتو</p>
-                </div>
-            </div>
-
-            <div class="timeline-item">
-                <div class="timeline-dot pending">⏳</div>
-                <div class="timeline-text">
-                    <h3>في الانتظار (قريباً)</h3>
-                    <p>سيتم قبول الطلب من قبل المتجر</p>
-                </div>
-            </div>
-
-            <div class="timeline-item">
-                <div class="timeline-dot pending">⏳</div>
-                <div class="timeline-text">
-                    <h3>قيد التحضير</h3>
-                    <p>جاري تحضير الطلب</p>
-                </div>
-            </div>
-
-            <div class="timeline-item">
-                <div class="timeline-dot pending">⏳</div>
-                <div class="timeline-text">
-                    <h3>جاهز للتسليم</h3>
-                    <p>سيتم إخطارك عند التسليم</p>
-                </div>
-            </div>
+        <div class="buttons">
+            <button class="btn btn-primary" onclick="goHome()">🏠 العودة للرئيسية</button>
+            <button class="btn btn-secondary" onclick="makeNewOrder()">🛒 طلب جديد</button>
         </div>
 
-        <div class="message">
-            ✓ تم استلام طلبك بنجاح! سنقوم بمراجعته وتأكيده قريباً. ستصلك إشعارات عند كل تحديث للطلب.
-        </div>
-
-        <div class="action-buttons">
-            <button class="btn btn-primary" onclick="goHome()">العودة للرئيسية</button>
-            <button class="btn btn-secondary" onclick="viewOrders()">عرض طلباتي</button>
+        <div class="timer">
+            <span id="redirectMessage">سيتم التوجيه للرئيسية بعد 10 ثوانٍ...</span>
         </div>
     </div>
 
     <script>
-        // تحميل بيانات الطلب من localStorage
+        let lastOrder = null;
+        let redirectTimer = 10;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadOrderData();
+            renderOrderDetails();
+            startRedirectTimer();
+        });
+
         function loadOrderData() {
-            const lastOrder = JSON.parse(localStorage.getItem('lastOrder') || '{}');
-            
-            document.getElementById('orderId').textContent = lastOrder.orderId || '---';
-            document.getElementById('customerName').textContent = lastOrder.name || '---';
-            document.getElementById('customerPhone').textContent = lastOrder.phone || '---';
-            document.getElementById('customerAddress').textContent = lastOrder.address || '---';
-            document.getElementById('totalAmount').textContent = (lastOrder.total || 0) + ' AED';
-            
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('ar-AE');
-            document.getElementById('submittedTime').textContent = timeStr;
-            document.getElementById('paidTime').textContent = timeStr;
+            try {
+                lastOrder = JSON.parse(localStorage.getItem('lastOrder'));
+                if (!lastOrder) lastOrder = JSON.parse(localStorage.getItem('tempOrder'));
+                if (!lastOrder) showEmptyState();
+            } catch (e) {
+                console.error('Error:', e);
+                showEmptyState();
+            }
+        }
+
+        function renderOrderDetails() {
+            if (!lastOrder) return;
+
+            const orderDetails = document.getElementById('orderDetails');
+            orderDetails.innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">رقم الطلب:</span>
+                    <span class="detail-value">${lastOrder.orderId}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">الاسم:</span>
+                    <span class="detail-value">${lastOrder.name}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">المجموع:</span>
+                    <span class="detail-value" style="font-size: 18px;">${lastOrder.total} AED</span>
+                </div>
+            `;
+
+            if (lastOrder.items && lastOrder.items.length > 0) {
+                document.getElementById('orderItemsContainer').style.display = 'block';
+                let itemsHTML = '';
+                lastOrder.items.forEach(item => {
+                    itemsHTML += `
+                        <div class="item">
+                            <span class="item-name">${item.name} × ${item.quantity}</span>
+                            <span class="item-price">${item.price * item.quantity} AED</span>
+                        </div>
+                    `;
+                });
+                document.getElementById('orderItemsList').innerHTML = itemsHTML;
+            }
+        }
+
+        function showEmptyState() {
+            document.getElementById('orderDetails').innerHTML = '<p style="color: #999;">لم يتم العثور على بيانات الطلب</p>';
+        }
+
+        function startRedirectTimer() {
+            const redirectMessage = document.getElementById('redirectMessage');
+            const interval = setInterval(() => {
+                redirectTimer--;
+                redirectMessage.textContent = `سيتم التوجيه للرئيسية بعد ${redirectTimer} ثوانٍ...`;
+                if (redirectTimer <= 0) {
+                    clearInterval(interval);
+                    goHome();
+                }
+            }, 1000);
         }
 
         function goHome() {
+            localStorage.removeItem('lastOrder');
+            localStorage.removeItem('tempOrder');
+            localStorage.removeItem('cozCart');
             window.location.href = 'index.html';
         }
 
-        function viewOrders() {
-            // يمكن إضافة صفحة لعرض طلبات العميل
-            alert('سيتم إضافة هذه الميزة قريباً');
+        function makeNewOrder() {
+            localStorage.removeItem('lastOrder');
+            localStorage.removeItem('tempOrder');
+            localStorage.removeItem('cozCart');
+            window.location.href = 'index.html';
         }
-
-        // تحميل البيانات عند فتح الصفحة
-        window.addEventListener('DOMContentLoaded', loadOrderData);
     </script>
 </body>
 </html>
