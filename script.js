@@ -166,3 +166,7 @@ async function submitOrder(event) {
 
 // ===== تشغيل =====
 document.addEventListener("DOMContentLoaded", init);
+
+function goCheckout() {
+    showSection('products');
+}
