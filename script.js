@@ -36,10 +36,7 @@ let products = {};
 let cart = [];
 
 // ===== Ziina Configuration =====
-const ZIINA_CONFIG = {
-    apiKey: '8OKX7oHy/bm5O3fVJTeLQIvqM8P9unWyUxtBoqtrFFmaZbrPrEu+zP6zDZ9eWhQx',
-    basePaymentLink: 'https://pay.ziina.com/ar/sharjha11/'
-};
+const ZIINA_URL = "https://coz-server-iho7.onrender.com/create-payment";
 
 // ===== تهيئة =====
 function init() {
