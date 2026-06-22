@@ -171,18 +171,44 @@ function goCheckout() {
     showSection('products');
 }
 
-// ===== التنقل بين الصفحات =====
+// ===== التنقل بين الصفحات =====// ===== التنقل بين الصفحات =====
 function showSection(id) {
     document.querySelectorAll('.section').forEach(s => {
         s.classList.remove('active');
     });
-    document.getElementById(id).classList.add('active');
+
+    const section = document.getElementById(id);
+    if (section) {
+        section.classList.add('active');
+    }
 }
 
+// ===== أزرار التنقل =====
 function goHome() {
     showSection('home');
 }
 
 function goProducts() {
     showSection('products');
+}
+
+// ===== المودالات =====
+function showCartModal() {
+    document.getElementById('cart-modal').classList.add('active');
+}
+
+function closeCartModal() {
+    document.getElementById('cart-modal').classList.remove('active');
+}
+
+function showMenuModal() {
+    document.getElementById('menu-modal').classList.add('active');
+}
+
+function closeMenuModal() {
+    document.getElementById('menu-modal').classList.remove('active');
+}
+
+function closeCheckoutModal() {
+    document.getElementById('checkout-modal').classList.remove('active');
 }
