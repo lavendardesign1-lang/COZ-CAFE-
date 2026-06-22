@@ -170,3 +170,19 @@ document.addEventListener("DOMContentLoaded", init);
 function goCheckout() {
     showSection('products');
 }
+
+// ===== التنقل بين الصفحات =====
+function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => {
+        s.classList.remove('active');
+    });
+    document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+    showSection('home');
+}
+
+function goProducts() {
+    showSection('products');
+}
