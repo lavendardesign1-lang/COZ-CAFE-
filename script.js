@@ -1,21 +1,31 @@
-// ===== Language =====
+// ===== Language Management =====
 let currentLang = 'ar';
 
-// ===== البيانات =====
+function changeLanguage(lang) {
+    currentLang = lang;
+
+    document.querySelectorAll('[data-ar][data-en]').forEach(el => {
+        el.textContent = el.getAttribute(`data-${lang}`);
+    });
+
+    renderProducts();
+}
+
+// ===== بيانات =====
 let products = {};
 let cart = [];
 let quantities = {};
 
-// ✅ رابط السيرفر
+// ✅ Ziina
 const ZIINA_URL = "https://coz-server-iho7.onrender.com/create-payment";
 
-// ===== تهيئة =====
+// ===== INIT =====
 function init() {
     loadProducts();
     renderProducts();
 }
 
-// ===== المنتجات (نفس موقعك ✅) =====
+// ===== المنتجات (نفسك) =====
 function loadProducts() {
     products = {
         V60: {
@@ -55,12 +65,11 @@ function renderProducts() {
             const row = document.createElement("div");
             row.className = "product-line";
 
-            const img = item.image 
-                ? `${item.image}` 
+            const img = item.image
+                ? `<img src="${item.image}" class="product-img">`
                 : "";
 
             row.innerHTML = `
-
                 ${img}
 
                 <div class="product-info">
@@ -84,7 +93,7 @@ function renderProducts() {
     });
 }
 
-// ===== تغيير الكمية =====
+// ===== الكمية =====
 function changeQty(id, change) {
     quantities[id] = (quantities[id] || 1) + change;
 
@@ -118,72 +127,17 @@ function addToCart(id) {
         });
     }
 
-    alert("✅ تمت الإضافة للسلة");
+    alert("✅ تمت الإضافة");
 }
 
-// ===== ✅ الدفع =====
-async function submitOrder(event) {
-    event.preventDefault();
-
-    const name    = document.getElementById('cust-name').value.trim();
-    const phone   = document.getElementById('cust-phone').value.trim();
-    const address = document.getElementById('cust-address').value.trim();
-
-    if (!name || !phone || !address) {
-        alert("يرجى ملء جميع الحقول");
-        return;
-    }
-
-    // ✅ تحقق رقم الهاتف
-    const phoneRegex = /^05\d{8}$/;
-    if (!phoneRegex.test(phone)) {
-        alert("❌ الرقم لازم 10 أرقام ويبدأ بـ 05");
-        return;
-    }
-
-    const orderId = "ORD-" + Date.now();
-
-    try {
-        const res = await fetch(ZIINA_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                cart,
-                orderId
-            })
-        });
-
-        const data = await res.json();
-
-        window.location.href = data.payment_url;
-
-    } catch {
-        alert("❌ خطأ في الدفع");
-    }
-}
-
-// ===== تشغيل =====
-document.addEventListener("DOMContentLoaded", init);
-
-function goCheckout() {
-    showSection('products');
-}
-
-// ===== التنقل بين الصفحات =====// ===== التنقل بين الصفحات =====
+// ===== التنقل ✅ (مهم رجعناه) =====
 function showSection(id) {
     document.querySelectorAll('.section').forEach(s => {
         s.classList.remove('active');
     });
-
-    const section = document.getElementById(id);
-    if (section) {
-        section.classList.add('active');
-    }
+    document.getElementById(id).classList.add('active');
 }
 
-// ===== أزرار التنقل =====
 function goHome() {
     showSection('home');
 }
@@ -192,7 +146,7 @@ function goProducts() {
     showSection('products');
 }
 
-// ===== المودالات =====
+// ===== السلة مودال =====
 function showCartModal() {
     document.getElementById('cart-modal').classList.add('active');
 }
@@ -212,3 +166,43 @@ function closeMenuModal() {
 function closeCheckoutModal() {
     document.getElementById('checkout-modal').classList.remove('active');
 }
+
+// ===== الدفع ✅ =====
+async function submitOrder(event) {
+    event.preventDefault();
+
+    const name = document.getElementById('cust-name').value.trim();
+    const phone = document.getElementById('cust-phone').value.trim();
+    const address = document.getElementById('cust-address').value.trim();
+
+    if (!name || !phone || !address) {
+        alert("يرجى ملء جميع الحقول");
+        return;
+    }
+
+    const phoneRegex = /^05\d{8}$/;
+    if (!phoneRegex.test(phone)) {
+        alert("❌ الرقم لازم 10 أرقام ويبدأ بـ 05");
+        return;
+    }
+
+    const orderId = "ORD-" + Date.now();
+
+    const res = await fetch(ZIINA_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            cart,
+            orderId
+        })
+    });
+
+    const data = await res.json();
+
+    window.location.href = data.payment_url;
+}
+
+// ===== تشغيل =====
+document.addEventListener("DOMContentLoaded", init);
