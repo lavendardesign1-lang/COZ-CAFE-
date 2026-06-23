@@ -174,25 +174,22 @@ function renderProducts() {
                     ? (currentLang === 'ar' ? '+ أضف' : '+ Add')
                     : (currentLang === 'ar' ? 'غير متوفر' : 'Unavailable');
                 
-                card.innerHTML = `
-                    <img src="${item.image}" alt="${itemName}" class="v60-flavor-img"
-                         onerror="this.style.background='linear-gradient(135deg,#d4a46a,#C19A6B)';this.style.display='block';">
-                    <div class="v60-flavor-info">
-                        <span class="v60-flavor-name">${itemName}</span>
-                        <span class="v60-flavor-price">${item.price} AED</span>
-                    </div>
-                    <div class="v60-flavor-actions">
-                        ${available ? `<input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">` : ''}
-                        <button class="add-btn ${available ? '' : 'unavailable'}" 
-                                onclick="${available ? `addToCart(${item.id}, '${catKey}')` : 'return false'}"
-                                ${available ? '' : 'disabled'}
-                                style="background-color: ${available ? '' : '#999'};">
-                            ${btnText}
-                        </button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
+              card.innerHTML = `
+    ${item.image}
+    <div class="v60-flavor-info">
+        <span class="v60-flavor-name">${itemName}</span>
+        <span class="v60-flavor-price">${item.price} AED</span>
+    </div>
+    <div class="v60-flavor-actions">
+        ${available ? `<input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">` : ''}
+        <button class="add-btn ${available ? '' : 'unavailable'}" 
+                onclick="${available ? `addToCart(${item.id}, '${catKey}')` : 'return false'}"
+                ${available ? '' : 'disabled'}>
+            ${btnText}
+        </button>
+    </div>
+`;
+
 
             section.appendChild(grid);
 
@@ -232,9 +229,9 @@ function renderProducts() {
 function buildProductRow(item, catKey) {
     const available = isProductAvailable(item.id);
     const itemName = currentLang === 'ar' ? item.nameAr : item.nameEn;
+
     const imgHTML = item.image
-        ? `<img src="${item.image}" alt="${itemName}" class="product-thumb"
-               onerror="this.style.display='none'">`
+        ? `<img src="${item.image}" alt="${itemName}" class="product-thumb" onerror="this.style.display='none'">`
         : '';
 
     const btnText = available 
@@ -242,26 +239,32 @@ function buildProductRow(item, catKey) {
         : (currentLang === 'ar' ? 'غير متوفر' : 'Unavailable');
 
     return `
-        <div class="product-row" style="opacity: ${available ? '1' : '0.5'};">
+        <div class="product-row" style="opacity:${available ? 1 : 0.5};">
+
             <div class="product-row-left">
                 ${imgHTML}
                 <div>
                     <div class="product-row-name">${itemName}</div>
                 </div>
             </div>
+
             <div class="product-row-right">
                 <span class="price-tag">${item.price} AED</span>
+
                 ${available ? `<input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">` : ''}
-                <button class="add-btn ${available ? '' : 'unavailable'}" 
-                        onclick="${available ? `addToCart(${item.id}, '${catKey}')` : 'return false'}"
-                        ${available ? '' : 'disabled'}
-                        style="background-color: ${available ? '' : '#999'};">
+
+                <button class="add-btn ${available ? '' : 'unavailable'}"
+                    onclick="${available ? `addToCart(${item.id}, '${catKey}')` : 'return false'}"
+                    ${available ? '' : 'disabled'}>
                     ${btnText}
                 </button>
             </div>
+
         </div>
     `;
 }
+``
+
 
 // ===== إضافة للسلة =====
 function addToCart(itemId, catKey) {
