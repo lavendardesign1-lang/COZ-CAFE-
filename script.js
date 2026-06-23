@@ -173,18 +173,20 @@ function renderProducts() {
                 const btnText = available 
                     ? (currentLang === 'ar' ? '+ أضف' : '+ Add')
                     : (currentLang === 'ar' ? 'غير متوفر' : 'Unavailable');
-                
-              card.innerHTML = `
-    ${item.image}
+         card.innerHTML = `
+    <img src="${item.image}" class="v60-flavor-img" onerror="this.style.display='none'">
+
     <div class="v60-flavor-info">
         <span class="v60-flavor-name">${itemName}</span>
         <span class="v60-flavor-price">${item.price} AED</span>
     </div>
+
     <div class="v60-flavor-actions">
         ${available ? `<input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">` : ''}
-        <button class="add-btn ${available ? '' : 'unavailable'}" 
-                onclick="${available ? `addToCart(${item.id}, '${catKey}')` : 'return false'}"
-                ${available ? '' : 'disabled'}>
+
+        <button class="add-btn ${available ? '' : 'unavailable'}"
+            onclick="addToCart(${item.id}, '${catKey}')"
+            ${available ? '' : 'disabled'}>
             ${btnText}
         </button>
     </div>
