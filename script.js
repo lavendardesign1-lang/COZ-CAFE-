@@ -95,7 +95,6 @@ function buildProductRow(item, catKey) {
         </div>
     `;
 }
-
 // ===== السلة =====
 function addToCart(itemId, catKey) {
 
