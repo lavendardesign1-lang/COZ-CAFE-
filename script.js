@@ -73,7 +73,7 @@ function renderProducts() {
 function buildProductRow(item, catKey) {
 
     const imgHTML = item.image
-        ? `${item.image}`
+        ? `<img src="${item.image}" class="product-thumb">`
         : '';
 
     return `
