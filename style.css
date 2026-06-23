@@ -693,3 +693,32 @@ body.en .lang-switcher {
     left: auto;
     right: 1.25rem;
 }
+.product-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.product-thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.product-info {
+    flex: 1;
+}
+
+.product-name {
+    font-weight: bold;
+}
+
+.product-price {
+    color: #777;
+    font-size: 13px;
+}
