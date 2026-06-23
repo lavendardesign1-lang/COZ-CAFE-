@@ -232,37 +232,38 @@ function renderProducts() {
 function buildProductRow(item, catKey) {
     const available = isProductAvailable(item.id);
     const itemName = currentLang === 'ar' ? item.nameAr : item.nameEn;
+
     const imgHTML = item.image
-        ? `<img src="${item.image}" alt="${itemName}" class="product-thumb"
-               onerror="this.style.display='none'">`
+        ? `${item.image}`
         : '';
 
     const btnText = available 
-        ? (currentLang === 'ar' ? '+ أضف' : '+ Add')
+        ? (currentLang === 'ar' ? 'إضافة' : 'Add')
         : (currentLang === 'ar' ? 'غير متوفر' : 'Unavailable');
 
     return `
-        <div class="product-row" style="opacity: ${available ? '1' : '0.5'};">
-            <div class="product-row-left">
-                ${imgHTML}
-                <div>
-                    <div class="product-row-name">${itemName}</div>
-                </div>
+        <div class="product-line" style="opacity:${available ? 1 : 0.5};">
+
+            ${imgHTML}
+
+            <div class="product-info">
+                <div class="product-name">${itemName}</div>
+                <div class="product-price">${item.price} AED</div>
             </div>
-            <div class="product-row-right">
-                <span class="price-tag">${item.price} AED</span>
-                ${available ? `<input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">` : ''}
-                <button class="add-btn ${available ? '' : 'unavailable'}" 
-                        onclick="${available ? `addToCart(${item.id}, '${catKey}')` : 'return false'}"
-                        ${available ? '' : 'disabled'}
-                        style="background-color: ${available ? '' : '#999'};">
-                    ${btnText}
-                </button>
+
+            <div class="product-qty">
+                ${available ? `<input type="number" id="qty-${item.id}" value="1" min="1" max="10" class="qty-input">` : ''}
             </div>
+
+            <button class="add-btn"
+                onclick="${available ? `addToCart(${item.id}, '${catKey}')` : 'return false'}"
+                ${available ? '' : 'disabled'}>
+                ${btnText}
+            </button>
+
         </div>
     `;
 }
-
 // ===== إضافة للسلة =====
 function addToCart(itemId, catKey) {
     // التحقق من التوفر قبل الإضافة
