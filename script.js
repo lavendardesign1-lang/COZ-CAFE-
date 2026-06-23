@@ -68,8 +68,6 @@ function renderProducts() {
 
     });
 }
-
-// ✅ الدالة المصححة 100%
 function buildProductRow(item, catKey) {
 
     const imgHTML = item.image
@@ -94,7 +92,7 @@ function buildProductRow(item, catKey) {
 
         </div>
     `;
-}
+}}
 // ===== السلة =====
 function addToCart(itemId, catKey) {
 
