@@ -234,8 +234,9 @@ function buildProductRow(item, catKey) {
     const itemName = currentLang === 'ar' ? item.nameAr : item.nameEn;
 
     const imgHTML = item.image
-        ? `${item.image}`
-        : '';
+    ? `<img src="${item.image}" alt="${itemName}" class="product-thumb"
+       onerror="this.style.display='none'">`
+    : '';
 
     const btnText = available 
         ? (currentLang === 'ar' ? 'إضافة' : 'Add')
