@@ -254,10 +254,12 @@ function buildProductRow(item, catKey) {
                 ${available ? `<input type="number" id="qty-${item.id}" class="qty-input" value="1" min="1" max="10">` : ''}
 
                 <button class="add-btn ${available ? '' : 'unavailable'}"
-                    onclick="${available ? `addToCart(${item.id}, '${catKey}')` : 'return false'}"
-                    ${available ? '' : 'disabled'}>
-                    ${btnText}
-                </button>
+                  
+    onclick="addToCart(${item.id}, '${catKey}')"
+    ${available ? '' : 'disabled'}>
+    ${btnText}
+</button>
+
             </div>
 
         </div>
