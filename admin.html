@@ -458,6 +458,17 @@
         function loadOrders() {
             try {
                 const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+                let hasLegacyStatus = false;
+                orders.forEach(order => {
+                    const normalizedStatus = normalizeStatus(order.status);
+                    if (order.status !== normalizedStatus) {
+                        order.status = normalizedStatus;
+                        hasLegacyStatus = true;
+                    }
+                });
+                if (hasLegacyStatus) {
+                    localStorage.setItem('cozOrders', JSON.stringify(orders));
+                }
                 allOrders = orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 renderOrders();
             } catch (e) {
@@ -472,8 +483,9 @@
             let pending = 0, approved = 0, preparing = 0, ready = 0;
 
             allOrders.forEach(order => {
+                const status = normalizeStatus(order.status);
                 totalRevenue += order.total || 0;
-                switch (order.status) {
+                switch (status) {
                     case 'pending':
                         pending++;
                         break;
@@ -502,7 +514,7 @@
             const list = document.getElementById('ordersList');
             let filtered = currentFilter === 'all' 
                 ? allOrders 
-                : allOrders.filter(o => o.status === currentFilter);
+                : allOrders.filter(o => normalizeStatus(o.status) === currentFilter);
 
             if (filtered.length === 0) {
                 list.innerHTML = `
@@ -515,7 +527,7 @@
             }
 
             list.innerHTML = filtered.map(order => `
-                <div class="order-card ${order.status || 'pending'}">
+                <div class="order-card ${normalizeStatus(order.status)}">
                     <div class="order-info">
                         <h3>🆔 ${order.orderId}</h3>
                         <p><strong>👤</strong> ${order.name}</p>
@@ -533,7 +545,7 @@
 
                     <div class="order-total">
                         <div class="amount">${order.total || 0} AED</div>
-                        <div class="status-badge ${order.status || 'pending'}">
+                        <div class="status-badge ${normalizeStatus(order.status)}">
                             ${getStatusText(order.status)}
                         </div>
                     </div>
@@ -547,7 +559,7 @@
 
         // الأزرار حسب الحالة
         function getActionButtons(order) {
-            const status = order.status || 'pending';
+            const status = normalizeStatus(order.status);
             
             if (status === 'pending') {
                 return `<button class="action-btn btn-approve" onclick="updateOrderStatus('${order.orderId}', 'approved')">✅ قبول</button>`;
@@ -555,8 +567,6 @@
                 return `<button class="action-btn btn-preparing" onclick="updateOrderStatus('${order.orderId}', 'preparing')">👨‍🍳 جاري الإعداد</button>`;
             } else if (status === 'preparing') {
                 return `<button class="action-btn btn-ready" onclick="updateOrderStatus('${order.orderId}', 'ready')">🚗 جاهز للتقديم</button>`;
-            } else if (status === 'ready') {
-                return `<button class="action-btn btn-complete" onclick="updateOrderStatus('${order.orderId}', 'completed')">✔️ انتهيت</button>`;
             }
             return '';
         }
@@ -580,10 +590,16 @@
                 'pending': '⏳ في الانتظار',
                 'approved': '✅ مقبول',
                 'preparing': '👨‍🍳 قيد الإعداد',
-                'ready': '🚗 جاهز للتقديم',
-                'completed': '✔️ مكتمل'
+                'ready': '🚗 جاهز للتقديم'
             };
-            return statuses[status] || '❓ غير معروف';
+            return statuses[normalizeStatus(status)] || '❓ غير معروف';
+        }
+
+        function normalizeStatus(status) {
+            if (status === 'accepted' || status === 'confirmed') return 'approved';
+            if (status === 'completed') return 'ready';
+            if (['pending', 'approved', 'preparing', 'ready'].includes(status)) return status;
+            return 'pending';
         }
 
         // تصفية الطلبات

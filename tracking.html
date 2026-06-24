@@ -107,16 +107,15 @@
         }
 
         .timeline-item.completed .timeline-dot {
-            background: #28a745;
-            border-color: #28a745;
-            color: white;
+            background: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
         }
 
-        .timeline-item.pending .timeline-dot {
-            background: #fff3cd;
-            border-color: #ffc107;
-            color: #ff9800;
-            animation: pulse 2s infinite;
+        .timeline-item.upcoming .timeline-dot {
+            background: #f8f9fa;
+            border-color: #ced4da;
+            color: #adb5bd;
         }
 
         @keyframes pulse {
@@ -398,7 +397,7 @@
         function renderTracking() {
             if (!currentOrder) return;
 
-            const status = currentOrder.status || 'pending';
+            const status = normalizeStatus(currentOrder.status);
             const content = document.getElementById('trackingContent');
 
             let html = `
@@ -415,11 +414,11 @@
                     <h3>📋 معلومات الطلب</h3>
                     <div class="detail-row">
                         <span class="detail-label">الاسم:</span>
-                        <span class="detail-value">${currentOrder.name}</span>
+                        <span class="detail-value">${currentOrder.name || '-'}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">رقم الهاتف:</span>
-                        <span class="detail-value">${currentOrder.phone}</span>
+                        <span class="detail-value">${currentOrder.phone || '-'}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">رقم السيارة:</span>
@@ -461,8 +460,7 @@
                 { key: 'pending', icon: '⏳', title: 'في الانتظار', desc: 'جاري مراجعة الطلب' },
                 { key: 'approved', icon: '✅', title: 'تم القبول', desc: 'تم قبول طلبك' },
                 { key: 'preparing', icon: '👨‍🍳', title: 'قيد الإعداد', desc: 'جاري تحضير الطلب' },
-                { key: 'ready', icon: '🚗', title: 'جاهز للتقديم', desc: 'طلبك جاهز الآن' },
-                { key: 'completed', icon: '✔️', title: 'مكتمل', desc: 'تم استلام الطلب' }
+                { key: 'ready', icon: '🚗', title: 'جاهز للتقديم', desc: 'طلبك جاهز الآن' }
             ];
 
             const statusIndex = statuses.findIndex(s => s.key === status);
@@ -472,7 +470,7 @@
                 if (index <= statusIndex) {
                     itemClass = index === statusIndex ? 'active' : 'completed';
                 } else {
-                    itemClass = 'pending';
+                    itemClass = 'upcoming';
                 }
 
                 return `
@@ -489,9 +487,12 @@
         }
 
         function getTimeForStatus(statusKey, currentStatus) {
-            if (statusKey === currentStatus) {
+            const timelineOrder = ['pending', 'approved', 'preparing', 'ready'];
+            const normalizedCurrentStatus = normalizeStatus(currentStatus);
+
+            if (statusKey === normalizedCurrentStatus) {
                 return 'جاري الآن...';
-            } else if (['pending', 'approved', 'preparing', 'ready'].indexOf(statusKey) <= ['pending', 'approved', 'preparing', 'ready'].indexOf(currentStatus)) {
+            } else if (timelineOrder.indexOf(statusKey) <= timelineOrder.indexOf(normalizedCurrentStatus)) {
                 return 'تم';
             }
             return 'قادم...';
@@ -502,8 +503,7 @@
                 'pending': '⏳ طلبك في انتظار المراجعة. سيتم تحديثك قريباً',
                 'approved': '✅ تم قبول طلبك! جاري التحضير',
                 'preparing': '👨‍🍳 جاري تحضير طلبك الآن',
-                'ready': '🚗 طلبك جاهز! تفضل للاستلام',
-                'completed': '✔️ شكراً! تم استلام طلبك'
+                'ready': '🚗 طلبك جاهز! تفضل للاستلام'
             };
 
             return `
@@ -511,6 +511,13 @@
                     <strong>📢 آخر تحديث:</strong> ${statusMessages[status] || 'جاري معالجة الطلب'}
                 </div>
             `;
+        }
+
+        function normalizeStatus(status) {
+            if (status === 'accepted' || status === 'confirmed') return 'approved';
+            if (status === 'completed') return 'ready';
+            if (['pending', 'approved', 'preparing', 'ready'].includes(status)) return status;
+            return 'pending';
         }
 
         function showEmptyState() {

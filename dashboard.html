@@ -198,12 +198,17 @@
             color: #856404;
         }
 
-        .status-accepted {
+        .status-approved {
             background: #d4edda;
             color: #155724;
         }
 
-        .status-completed {
+        .status-preparing {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-ready {
             background: #d1ecf1;
             color: #0c5460;
         }
@@ -667,7 +672,10 @@
                             <thead>
                                 <tr>
                                     <th>رقم الطلب</th>
-                                    <th>الزبون</th>
+                                    <th>الاسم</th>
+                                    <th>الهاتف</th>
+                                    <th>السيارة</th>
+                                    <th>الطلبية</th>
                                     <th>المبلغ</th>
                                     <th>الحالة</th>
                                     <th>الإجراء</th>
@@ -847,6 +855,17 @@
         function loadDashboardData() {
             loadProducts();
             const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+            let hasLegacyStatus = false;
+            orders.forEach(order => {
+                const normalizedStatus = normalizeStatus(order.status);
+                if (order.status !== normalizedStatus) {
+                    order.status = normalizedStatus;
+                    hasLegacyStatus = true;
+                }
+            });
+            if (hasLegacyStatus) {
+                localStorage.setItem('cozOrders', JSON.stringify(orders));
+            }
             
             document.getElementById('totalOrders').textContent = orders.length;
             document.getElementById('pendingOrders').textContent = orders.filter(o => o.status === 'pending').length;
@@ -929,52 +948,97 @@
             tbody.innerHTML = '';
 
             if (orders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px;">لا توجد طلبات حالياً</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 30px;">لا توجد طلبات حالياً</td></tr>';
                 return;
             }
 
-            orders.forEach((order, idx) => {
+            let hasLegacyStatus = false;
+
+            orders.forEach((order) => {
+                const normalizedStatus = normalizeStatus(order.status);
+                if (order.status !== normalizedStatus) {
+                    order.status = normalizedStatus;
+                    hasLegacyStatus = true;
+                }
+
                 const row = document.createElement('tr');
                 const statusClass = `status-${order.status}`;
-                const statusText = order.status === 'pending' ? 'معلق' : order.status === 'accepted' ? 'مقبول' : 'مكتمل';
+                const statusText = getStatusText(order.status);
+                const itemsText = (order.items || [])
+                    .map(item => `${item.name} × ${item.quantity}`)
+                    .join('<br>') || 'لا توجد منتجات';
 
                 row.innerHTML = `
                     <td>${order.orderId}</td>
                     <td>${order.name}</td>
+                    <td>${order.phone || '-'}</td>
+                    <td>${order.carNumber || '-'}</td>
+                    <td>${itemsText}</td>
                     <td>${order.total} AED</td>
                     <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                     <td>
-                        <button class="btn btn-success" onclick="acceptOrder('${order.orderId}')">قبول</button>
-                        <button class="btn btn-primary" onclick="completeOrder('${order.orderId}')">إتمام</button>
+                        ${renderOrderAction(order)}
                     </td>
                 `;
                 tbody.appendChild(row);
             });
+
+            if (hasLegacyStatus) {
+                localStorage.setItem('cozOrders', JSON.stringify(orders));
+            }
         }
 
-        function acceptOrder(orderId) {
+        function renderOrderAction(order) {
+            const status = normalizeStatus(order.status);
+            if (status === 'pending') {
+                return `<button class="btn btn-success" onclick="updateOrderStatus('${order.orderId}', 'approved')">قبول</button>`;
+            }
+            if (status === 'approved') {
+                return `<button class="btn btn-primary" onclick="updateOrderStatus('${order.orderId}', 'preparing')">بدء التحضير</button>`;
+            }
+            if (status === 'preparing') {
+                return `<button class="btn btn-primary" onclick="updateOrderStatus('${order.orderId}', 'ready')">جاهز للتقديم</button>`;
+            }
+            return '<span style="color:#666; font-size:13px;">✅ جاهز للتقديم</span>';
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
             const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
             const order = orders.find(o => o.orderId === orderId);
             
             if (order) {
-                order.status = 'accepted';
+                order.status = newStatus;
                 localStorage.setItem('cozOrders', JSON.stringify(orders));
                 loadOrders();
-                alert('✓ تم قبول الطلب: ' + orderId);
+                loadDashboardData();
             }
         }
 
-        function completeOrder(orderId) {
-            const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
-            const order = orders.find(o => o.orderId === orderId);
-            
-            if (order) {
-                order.status = 'completed';
-                localStorage.setItem('cozOrders', JSON.stringify(orders));
-                loadOrders();
-                alert('✓ تم إتمام الطلب: ' + orderId);
-            }
+        function normalizeStatus(status) {
+            if (status === 'accepted' || status === 'confirmed') return 'approved';
+            if (status === 'completed') return 'ready';
+            if (['pending', 'approved', 'preparing', 'ready'].includes(status)) return status;
+            return 'pending';
         }
+
+        function getStatusText(status) {
+            const labels = {
+                pending: 'معلق',
+                approved: 'مقبول',
+                preparing: 'قيد التحضير',
+                ready: 'جاهز للتقديم'
+            };
+            return labels[normalizeStatus(status)] || 'معلق';
+        }
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'cozOrders') {
+                loadDashboardData();
+                if (document.getElementById('orders').classList.contains('active')) {
+                    loadOrders();
+                }
+            }
+        });
 
         // ===== إدارة المنتجات =====
         function loadManagedProducts() {

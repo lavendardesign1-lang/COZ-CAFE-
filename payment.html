@@ -328,12 +328,12 @@
 
                     <div class="form-group">
                         <label>الاسم الكامل *</label>
-                        <input type="text" id="customerName" placeholder="أحمد محمد" required>
+                        <input type="text" id="customerName" placeholder="أحمد محمد" minlength="2" required>
                     </div>
 
                     <div class="form-group">
                         <label>رقم الهاتف *</label>
-                        <input type="tel" id="customerPhone" placeholder="0501234567" required>
+                        <input type="tel" id="customerPhone" placeholder="0501234567" pattern="05[0-9]{8}" maxlength="10" required>
                     </div>
 
                     <div class="form-group">
@@ -386,6 +386,8 @@
         let cart = [];
         let deliveryFee = 0;
         let currentOrder = null;
+        const ZIINA_API_KEY = '8OKX7oHy/bm5O3fVJTeLQIvqM8P9unWyUxtBoqtrFFmaZbrPrEu+zP6zDZ9eWhQx';
+        const ZIINA_API_URL = 'https://api-v2.ziina.com/api/payment_intent';
 
         // تحميل السلة عند فتح الصفحة
         window.addEventListener('DOMContentLoaded', () => {
@@ -458,8 +460,9 @@
             const phone = document.getElementById('customerPhone').value.trim();
             const carNumber = document.getElementById('carNumber').value.trim();
 
-            if (!name || !phone || !carNumber) {
-                showError('يرجى ملء جميع الحقول المطلوبة');
+            const validationError = validateCustomerData(name, phone, carNumber);
+            if (validationError) {
+                showError(validationError);
                 return;
             }
 
@@ -476,6 +479,26 @@
             }
 
             createPayment(name, phone, carNumber);
+        }
+
+        function validateCustomerData(name, phone, carNumber) {
+            if (!name || !phone || !carNumber) {
+                return 'يرجى ملء جميع الحقول المطلوبة';
+            }
+
+            if (name.length < 2) {
+                return 'الاسم يجب أن يكون حرفين على الأقل';
+            }
+
+            if (!/^05\d{8}$/.test(phone)) {
+                return 'رقم الهاتف يجب أن يكون 05xxxxxxxx (10 أرقام)';
+            }
+
+            if (!carNumber.trim()) {
+                return 'رقم السيارة مطلوب';
+            }
+
+            return null;
         }
 
         // إنشاء الطلب والدفع
@@ -498,22 +521,56 @@
                     total: total,
                     status: 'pending',
                     timestamp: new Date().toISOString(),
-                    paymentMethod: 'cash'
+                    paymentMethod: 'ziina'
                 };
 
                 // حفظ الطلب
                 saveOrder(currentOrder);
 
-                // محاكاة معالجة الدفع
-                setTimeout(() => {
-                    showLoading(false);
-                    processPaymentSuccess(orderId);
-                }, 1500);
+                // إنشاء رابط الدفع عبر Ziina
+                initiateZiinaPayment(currentOrder);
 
             } catch (error) {
                 showLoading(false);
                 showError('حدث خطأ: ' + error.message);
                 console.error('Payment error:', error);
+            }
+        }
+
+        async function initiateZiinaPayment(orderData) {
+            try {
+                const amount = Math.round((orderData.total || 0) * 100);
+                const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
+                const successUrl = `${baseUrl}success.html?order=${encodeURIComponent(orderData.orderId)}`;
+                const cancelUrl = `${baseUrl}cancel.html?order=${encodeURIComponent(orderData.orderId)}`;
+
+                const response = await fetch(ZIINA_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + ZIINA_API_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        amount: amount,
+                        currency_code: 'AED',
+                        message: `طلب ${orderData.orderId} - COZ CAFE`,
+                        success_url: successUrl,
+                        cancel_url: cancelUrl
+                    })
+                });
+
+                const result = await response.json();
+                const redirectUrl = result?.redirect_url || result?.payment_intent?.redirect_url;
+
+                if (!response.ok || !redirectUrl) {
+                    throw new Error(result?.message || result?.error || 'تعذر إنشاء رابط الدفع');
+                }
+
+                window.location.href = redirectUrl;
+            } catch (error) {
+                console.error('Ziina error:', error);
+                showLoading(false);
+                showError('تعذر الاتصال ببوابة الدفع Ziina. حاول مرة أخرى');
             }
         }
 
