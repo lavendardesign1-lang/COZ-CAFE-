@@ -204,6 +204,16 @@
 
         .info-box strong { color: #8B6914; }
 
+        .ziina-note {
+            background: #e8f4fd;
+            border-right: 3px solid #2196F3;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #1565C0;
+        }
+
         @media (max-width: 768px) {
             .payment-content { grid-template-columns: 1fr; }
             .payment-header h1 { font-size: 22px; }
@@ -226,7 +236,7 @@
 
                 <div class="loading" id="loadingSpinner">
                     <div class="spinner"></div>
-                    <p style="margin-top:15px;color:#666;">جاري معالجة طلبك...</p>
+                    <p style="margin-top:15px;color:#666;">جاري تحويلك لصفحة الدفع...</p>
                 </div>
 
                 <form id="paymentForm" onsubmit="handlePayment(event)">
@@ -249,6 +259,10 @@
 
                     <div class="info-box">
                         <strong>⚠️ ملاحظة:</strong> تأكد من صحة بيانات الطلب قبل المتابعة
+                    </div>
+
+                    <div class="ziina-note">
+                        💳 سيتم تحويلك لصفحة Ziina لإتمام الدفع بأمان
                     </div>
                 </form>
             </div>
@@ -277,7 +291,7 @@
 
                 <div class="button-group">
                     <button type="button" class="btn btn-cancel" onclick="goBack()">إلغاء</button>
-                    <button type="submit" form="paymentForm" class="btn btn-pay" id="payBtn">💳 ادفع الآن</button>
+                    <button type="submit" form="paymentForm" class="btn btn-pay" id="payBtn">💳 ادفع الآن عبر Ziina</button>
                 </div>
 
                 <div class="info-box" style="margin-top:15px;">
@@ -290,7 +304,8 @@
     <script>
         let cart = [];
         let deliveryFee = 0;
-        let currentOrder = null;
+
+        const ZIINA_LINK = 'https://pay.ziina.com/ar/sharjha11/';
 
         window.addEventListener('DOMContentLoaded', () => {
             loadCart();
@@ -377,66 +392,40 @@
                 return;
             }
 
-            createPayment(name, phone, carNumber);
-        }
+            // حفظ الطلب قبل التحويل
+            const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+            const total    = subtotal + deliveryFee;
+            const orderId  = 'ORD-' + Date.now();
 
-        function createPayment(name, phone, carNumber) {
-            showLoading(true);
-            hideMessages();
+            const orderData = {
+                orderId,
+                name,
+                phone,
+                carNumber,
+                items: cart.map(i => ({ ...i })),
+                subtotal,
+                delivery: deliveryFee,
+                total,
+                status: 'pending',
+                timestamp: new Date().toISOString()
+            };
 
-            try {
-                const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-                const total    = subtotal + deliveryFee;
-                const orderId  = 'ORD-' + Date.now();
+            // حفظ الطلب في localStorage
+            localStorage.setItem('lastOrder', JSON.stringify(orderData));
+            const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
+            orders.unshift(orderData);
+            localStorage.setItem('cozOrders', JSON.stringify(orders));
 
-                currentOrder = {
-                    orderId,
-                    name,
-                    phone,
-                    carNumber,
-                    items: cart.map(i => ({ ...i })),
-                    subtotal,
-                    delivery: deliveryFee,
-                    total,
-                    status: 'pending',
-                    timestamp: new Date().toISOString(),
-                    paymentMethod: 'cash'
-                };
-
-                saveOrder(currentOrder);
-
-                setTimeout(() => {
-                    showLoading(false);
-                    processPaymentSuccess(orderId);
-                }, 1500);
-
-            } catch (error) {
-                showLoading(false);
-                showError('حدث خطأ: ' + error.message);
-            }
-        }
-
-        function processPaymentSuccess(orderId) {
-            showSuccess('✅ تم استقبال الطلب بنجاح!');
+            // تفريغ السلة
             localStorage.removeItem('cozCart');
-            setTimeout(() => {
-                window.location.href = 'tracking.html?order=' + orderId;
-            }, 2000);
-        }
 
-        function saveOrder(orderData) {
-            try {
-                const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
-                const index  = orders.findIndex(o => o.orderId === orderData.orderId);
-                if (index >= 0) {
-                    orders[index] = orderData;
-                } else {
-                    orders.unshift(orderData);
-                }
-                localStorage.setItem('cozOrders', JSON.stringify(orders));
-            } catch (e) {
-                console.error('Error saving order:', e);
-            }
+            // إظهار loading ثم التحويل لـ Ziina
+            showLoading(true);
+            showSuccess('✅ جاري تحويلك لصفحة الدفع...');
+
+            setTimeout(() => {
+                window.location.href = ZIINA_LINK;
+            }, 1500);
         }
 
         function showError(message) {
