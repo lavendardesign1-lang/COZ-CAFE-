@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نموذج الدفع - COZ CAFE</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -24,7 +20,7 @@
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             overflow: hidden;
         }
 
@@ -35,10 +31,7 @@
             text-align: center;
         }
 
-        .payment-header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
+        .payment-header h1 { font-size: 28px; margin-bottom: 10px; }
 
         .payment-content {
             display: grid;
@@ -47,12 +40,9 @@
             padding: 30px;
         }
 
-        .form-section {
-            display: flex;
-            flex-direction: column;
-        }
+        .form-section { display: flex; flex-direction: column; }
 
-        .form-section h2 {
+        .form-section h2, .order-summary h2 {
             color: #8B6914;
             font-size: 18px;
             margin-bottom: 20px;
@@ -60,9 +50,7 @@
             padding-bottom: 10px;
         }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
+        .form-group { margin-bottom: 15px; }
 
         .form-group label {
             display: block;
@@ -85,7 +73,7 @@
         .form-group input:focus {
             outline: none;
             border-color: #8B6914;
-            box-shadow: 0 0 8px rgba(139, 105, 20, 0.3);
+            box-shadow: 0 0 8px rgba(139,105,20,0.3);
             background: #fffbf0;
         }
 
@@ -94,14 +82,6 @@
             padding: 20px;
             border-radius: 10px;
             border-right: 4px solid #D2B48C;
-        }
-
-        .order-summary h2 {
-            color: #8B6914;
-            font-size: 18px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #D2B48C;
-            padding-bottom: 10px;
         }
 
         .cart-items {
@@ -119,39 +99,15 @@
             background: white;
             border-radius: 8px;
             margin-bottom: 10px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        .cart-item-info {
-            flex: 1;
-        }
+        .cart-item-info { flex: 1; }
+        .cart-item-name { font-weight: 600; color: #333; font-size: 14px; }
+        .cart-item-qty { color: #666; font-size: 12px; margin-top: 4px; }
+        .cart-item-price { color: #8B6914; font-weight: 700; font-size: 14px; min-width: 60px; text-align: left; }
 
-        .cart-item-name {
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-        }
-
-        .cart-item-qty {
-            color: #666;
-            font-size: 12px;
-            margin-top: 4px;
-        }
-
-        .cart-item-price {
-            color: #8B6914;
-            font-weight: 700;
-            font-size: 14px;
-            min-width: 60px;
-            text-align: left;
-        }
-
-        .empty-cart {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
-            font-size: 14px;
-        }
+        .empty-cart { text-align: center; padding: 40px 20px; color: #999; font-size: 14px; }
 
         .order-total {
             background: white;
@@ -160,12 +116,7 @@
             border-top: 2px solid #D2B48C;
         }
 
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
+        .total-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
 
         .total-row.final {
             font-size: 18px;
@@ -194,14 +145,8 @@
             transition: all 0.3s ease;
         }
 
-        .btn-cancel {
-            background: #ccc;
-            color: #333;
-        }
-
-        .btn-cancel:hover {
-            background: #aaa;
-        }
+        .btn-cancel { background: #ccc; color: #333; }
+        .btn-cancel:hover { background: #aaa; }
 
         .btn-pay {
             background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
@@ -212,14 +157,10 @@
         .btn-pay:hover {
             background: linear-gradient(135deg, #654321 0%, #C19A6B 100%);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139, 105, 20, 0.4);
+            box-shadow: 0 5px 15px rgba(139,105,20,0.4);
         }
 
-        .btn-pay:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .btn-pay:disabled { background: #ccc; cursor: not-allowed; transform: none; }
 
         .message {
             padding: 15px;
@@ -229,32 +170,11 @@
             border-right: 4px solid;
         }
 
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border-right-color: #f5c6cb;
-            display: block;
-        }
+        .message.error   { background: #f8d7da; color: #721c24; border-right-color: #f5c6cb; }
+        .message.success { background: #d4edda; color: #155724; border-right-color: #c3e6cb; }
+        .message.warning { background: #fff3cd; color: #856404; border-right-color: #ffeeba; }
 
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border-right-color: #c3e6cb;
-            display: block;
-        }
-
-        .message.warning {
-            background: #fff3cd;
-            color: #856404;
-            border-right-color: #ffeeba;
-            display: block;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
+        .loading { display: none; text-align: center; padding: 20px; }
 
         .spinner {
             border: 3px solid #f3f3f3;
@@ -267,7 +187,7 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
+            0%   { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
@@ -282,26 +202,12 @@
             line-height: 1.6;
         }
 
-        .info-box strong {
-            color: #8B6914;
-        }
+        .info-box strong { color: #8B6914; }
 
         @media (max-width: 768px) {
-            .payment-content {
-                grid-template-columns: 1fr;
-            }
-
-            .payment-header h1 {
-                font-size: 22px;
-            }
-
-            .button-group {
-                flex-direction: column-reverse;
-            }
-
-            .cart-items {
-                max-height: 200px;
-            }
+            .payment-content { grid-template-columns: 1fr; }
+            .payment-header h1 { font-size: 22px; }
+            .cart-items { max-height: 200px; }
         }
     </style>
 </head>
@@ -313,14 +219,14 @@
         </div>
 
         <div class="payment-content">
-            <!-- نموذج المعلومات -->
             <div class="form-section">
-                <div class="message error" id="errorMessage"></div>
+                <div class="message error"   id="errorMessage"></div>
                 <div class="message success" id="successMessage"></div>
                 <div class="message warning" id="warningMessage"></div>
+
                 <div class="loading" id="loadingSpinner">
                     <div class="spinner"></div>
-                    <p style="margin-top: 15px; color: #666;">جاري معالجة طلبك...</p>
+                    <p style="margin-top:15px;color:#666;">جاري معالجة طلبك...</p>
                 </div>
 
                 <form id="paymentForm" onsubmit="handlePayment(event)">
@@ -347,7 +253,6 @@
                 </form>
             </div>
 
-            <!-- ملخص الطلب -->
             <div class="order-summary">
                 <h2>🛒 ملخص الطلب</h2>
 
@@ -375,7 +280,7 @@
                     <button type="submit" form="paymentForm" class="btn btn-pay" id="payBtn">💳 ادفع الآن</button>
                 </div>
 
-                <div class="info-box" style="margin-top: 15px;">
+                <div class="info-box" style="margin-top:15px;">
                     <strong>✓ آمن تماماً:</strong> جميع المعاملات محمية بأعلى معايير الأمان
                 </div>
             </div>
@@ -387,38 +292,41 @@
         let deliveryFee = 0;
         let currentOrder = null;
 
-        // تحميل السلة عند فتح الصفحة
         window.addEventListener('DOMContentLoaded', () => {
-            console.log('📄 Loading payment page...');
             loadCart();
+
+            if (cart.length === 0) {
+                showWarning('السلة فارغة! سيتم التوجيه للموقع...');
+                document.getElementById('payBtn').disabled = true;
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+                return;
+            }
+
             renderCart();
         });
 
-        // تحميل السلة من localStorage
         function loadCart() {
             try {
                 cart = JSON.parse(localStorage.getItem('cozCart')) || [];
-                console.log('✅ Cart loaded:', cart);
             } catch (e) {
-                console.error('Error loading cart:', e);
                 cart = [];
             }
         }
 
-        // عرض السلة والمجموع
         function renderCart() {
-            const cartList = document.getElementById('cartItemsList');
+            const cartList   = document.getElementById('cartItemsList');
             const subtotalEl = document.getElementById('subtotal');
             const deliveryEl = document.getElementById('delivery');
-            const totalEl = document.getElementById('totalPrice');
+            const totalEl    = document.getElementById('totalPrice');
 
             if (cart.length === 0) {
                 cartList.innerHTML = '<div class="empty-cart">السلة فارغة 🛒</div>';
                 subtotalEl.textContent = '0 AED';
                 deliveryEl.textContent = '0 AED';
-                totalEl.textContent = '0 AED';
+                totalEl.textContent    = '0 AED';
                 document.getElementById('payBtn').disabled = true;
-                showWarning('السلة فارغة! الرجاء اختيار منتجات أولاً');
                 return;
             }
 
@@ -442,20 +350,15 @@
             cartList.innerHTML = html;
             subtotalEl.textContent = subtotal + ' AED';
             deliveryEl.textContent = deliveryFee + ' AED';
-            
-            const total = subtotal + deliveryFee;
-            totalEl.textContent = total + ' AED';
-            
+            totalEl.textContent    = (subtotal + deliveryFee) + ' AED';
             document.getElementById('payBtn').disabled = false;
-            hideMessages();
         }
 
-        // معالجة الدفع
         function handlePayment(event) {
             event.preventDefault();
 
-            const name = document.getElementById('customerName').value.trim();
-            const phone = document.getElementById('customerPhone').value.trim();
+            const name      = document.getElementById('customerName').value.trim();
+            const phone     = document.getElementById('customerPhone').value.trim();
             const carNumber = document.getElementById('carNumber').value.trim();
 
             if (!name || !phone || !carNumber) {
@@ -468,7 +371,6 @@
                 return;
             }
 
-            // التحقق من فتح الطلبات
             const ordersOpen = localStorage.getItem('ordersOpen') !== 'false';
             if (!ordersOpen) {
                 showError('آسف! الطلبات مغلقة حالياً');
@@ -478,33 +380,31 @@
             createPayment(name, phone, carNumber);
         }
 
-        // إنشاء الطلب والدفع
         function createPayment(name, phone, carNumber) {
             showLoading(true);
             hideMessages();
 
             try {
-                const total = calculateTotal();
-                const orderId = 'ORD-' + Date.now();
+                const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+                const total    = subtotal + deliveryFee;
+                const orderId  = 'ORD-' + Date.now();
 
                 currentOrder = {
-                    orderId: orderId,
-                    name: name,
-                    phone: phone,
-                    carNumber: carNumber,
+                    orderId,
+                    name,
+                    phone,
+                    carNumber,
                     items: cart.map(i => ({ ...i })),
-                    subtotal: cart.reduce((s, i) => s + (i.price * i.quantity), 0),
+                    subtotal,
                     delivery: deliveryFee,
-                    total: total,
+                    total,
                     status: 'pending',
                     timestamp: new Date().toISOString(),
                     paymentMethod: 'cash'
                 };
 
-                // حفظ الطلب
                 saveOrder(currentOrder);
 
-                // محاكاة معالجة الدفع
                 setTimeout(() => {
                     showLoading(false);
                     processPaymentSuccess(orderId);
@@ -513,104 +413,70 @@
             } catch (error) {
                 showLoading(false);
                 showError('حدث خطأ: ' + error.message);
-                console.error('Payment error:', error);
             }
         }
 
-        // معالجة نجاح الدفع
         function processPaymentSuccess(orderId) {
             showSuccess('✅ تم استقبال الطلب بنجاح!');
-
-            // تنظيف السلة
             localStorage.removeItem('cozCart');
-            
-            // الانتقال لصفحة التتبع بعد ثانيتين
             setTimeout(() => {
                 window.location.href = 'tracking.html?order=' + orderId;
             }, 2000);
         }
 
-        // حفظ الطلب
         function saveOrder(orderData) {
             try {
                 const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
-                const index = orders.findIndex(o => o.orderId === orderData.orderId);
-                
+                const index  = orders.findIndex(o => o.orderId === orderData.orderId);
                 if (index >= 0) {
                     orders[index] = orderData;
                 } else {
                     orders.unshift(orderData);
                 }
-                
                 localStorage.setItem('cozOrders', JSON.stringify(orders));
-                console.log('✅ Order saved:', orderData.orderId);
             } catch (e) {
                 console.error('Error saving order:', e);
             }
         }
 
-        // حساب المجموع
-        function calculateTotal() {
-            const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-            return subtotal + deliveryFee;
-        }
-
-        // إظهار رسالة خطأ
         function showError(message) {
             hideMessages();
-            const errorEl = document.getElementById('errorMessage');
-            errorEl.textContent = message;
-            errorEl.style.display = 'block';
-            setTimeout(() => {
-                errorEl.style.display = 'none';
-            }, 5000);
+            const el = document.getElementById('errorMessage');
+            el.textContent   = message;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
         }
 
-        // إظهار رسالة نجاح
         function showSuccess(message) {
             hideMessages();
-            const successEl = document.getElementById('successMessage');
-            successEl.textContent = message;
-            successEl.style.display = 'block';
+            const el = document.getElementById('successMessage');
+            el.textContent   = message;
+            el.style.display = 'block';
         }
 
-        // إظهار رسالة تحذير
         function showWarning(message) {
             hideMessages();
-            const warningEl = document.getElementById('warningMessage');
-            warningEl.textContent = message;
-            warningEl.style.display = 'block';
+            const el = document.getElementById('warningMessage');
+            el.textContent   = message;
+            el.style.display = 'block';
         }
 
-        // إخفاء الرسائل
         function hideMessages() {
-            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display   = 'none';
             document.getElementById('successMessage').style.display = 'none';
             document.getElementById('warningMessage').style.display = 'none';
         }
 
-        // عرض/إخفاء التحميل
         function showLoading(show) {
             document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
             document.getElementById('payBtn').disabled = show;
         }
 
-        // العودة للخلف
         function goBack() {
             if (confirm('هل تريد إلغاء العملية والعودة للسلة؟')) {
                 window.location.href = 'index.html';
             }
         }
-
-        // التحقق من وجود سلة
-        window.addEventListener('load', () => {
-            if (cart.length === 0) {
-                showError('السلة فارغة! سيتم التوجيه للموقع...');
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
-            }
-        });
     </script>
 </body>
 </html>
