@@ -40,7 +40,7 @@
             background: #f9f9f9; padding: 20px;
             border-radius: 10px; border-right: 4px solid #D2B48C;
         }
-        .cart-items { max-height: 300px; overflow-y: auto; margin-bottom: 20px; padding-right: 10px; }
+        .cart-items { max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
         .cart-item {
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px; background: white; border-radius: 8px;
@@ -49,8 +49,8 @@
         .cart-item-info { flex: 1; }
         .cart-item-name { font-weight: 600; color: #333; font-size: 14px; }
         .cart-item-qty { color: #666; font-size: 12px; margin-top: 4px; }
-        .cart-item-price { color: #8B6914; font-weight: 700; font-size: 14px; min-width: 60px; text-align: left; }
-        .empty-cart { text-align: center; padding: 40px 20px; color: #999; font-size: 14px; }
+        .cart-item-price { color: #8B6914; font-weight: 700; font-size: 14px; }
+        .empty-cart { text-align: center; padding: 40px 20px; color: #999; }
         .order-total { background: white; padding: 15px; border-radius: 8px; border-top: 2px solid #D2B48C; }
         .total-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
         .total-row.final {
@@ -68,49 +68,56 @@
             background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
             color: white; font-size: 18px;
         }
-        .btn-pay:hover {
-            background: linear-gradient(135deg, #654321 0%, #C19A6B 100%);
-            transform: translateY(-2px); box-shadow: 0 5px 15px rgba(139,105,20,0.4);
+        .btn-pay:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* صندوق الانتظار - يظهر بعد فتح Ziina */
+        .waiting-box {
+            display: none;
+            background: #fff8e1;
+            border: 2px solid #D2B48C;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+            text-align: center;
         }
-        .btn-pay:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-        .btn-check {
+        .waiting-box .amount-display {
+            font-size: 32px;
+            font-weight: 800;
+            color: #8B6914;
+            margin: 10px 0;
+        }
+        .waiting-box p { color: #555; font-size: 14px; margin-bottom: 15px; }
+        .btn-done {
             background: linear-gradient(135deg, #28a745, #20c997);
-            color: white; margin-top: 10px; display: none;
-            font-size: 16px; font-weight: 700; padding: 16px;
-            border-radius: 8px; border: none; width: 100%; cursor: pointer;
+            color: white; width: 100%; padding: 16px;
+            border: none; border-radius: 8px;
+            font-size: 17px; font-weight: 700; cursor: pointer;
             box-shadow: 0 4px 12px rgba(40,167,69,0.3);
         }
-        .btn-check:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(40,167,69,0.4); }
+        .btn-done:hover { transform: translateY(-2px); }
+        .btn-reopen {
+            background: transparent; color: #8B6914;
+            border: 1px solid #D2B48C; width: 100%; padding: 10px;
+            border-radius: 8px; font-size: 13px; cursor: pointer; margin-top: 8px;
+        }
+
         .error-message {
             background: #f8d7da; color: #721c24; padding: 12px;
-            border-radius: 8px; margin-bottom: 20px; display: none; border-right: 4px solid #f5c6cb;
+            border-radius: 8px; margin-bottom: 15px; display: none; border-right: 4px solid #f5c6cb;
         }
         .success-message {
             background: #d4edda; color: #155724; padding: 12px;
-            border-radius: 8px; margin-bottom: 20px; display: none; border-right: 4px solid #c3e6cb;
+            border-radius: 8px; margin-bottom: 15px; display: none; border-right: 4px solid #c3e6cb;
         }
-        .loading { display: none; text-align: center; padding: 20px; }
-        .spinner {
-            border: 3px solid #f3f3f3; border-top: 3px solid #8B6914;
-            border-radius: 50%; width: 40px; height: 40px;
-            animation: spin 1s linear infinite; margin: 0 auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .info-box {
             background: #fffbf0; padding: 12px; border-radius: 8px;
             border-right: 3px solid #D2B48C; margin-top: 15px;
             font-size: 13px; color: #666; line-height: 1.6;
         }
         .info-box strong { color: #8B6914; }
-        .info-ziina {
-            background: #e7f3ff; border-right: 3px solid #17a2b8;
-            padding: 12px; border-radius: 8px; margin-top: 10px;
-            font-size: 13px; color: #0c5460; line-height: 1.6; display: none;
-        }
         @media (max-width: 768px) {
             .payment-content { grid-template-columns: 1fr; }
             .payment-header h1 { font-size: 22px; }
-            .cart-items { max-height: 200px; }
         }
     </style>
 </head>
@@ -123,12 +130,8 @@
 
         <div class="payment-content">
             <div class="form-section">
-                <div class="error-message"   id="errorMessage"></div>
+                <div class="error-message" id="errorMessage"></div>
                 <div class="success-message" id="successMessage"></div>
-                <div class="loading" id="loadingSpinner">
-                    <div class="spinner"></div>
-                    <p style="margin-top:15px;color:#666;">جاري تحضير صفحة الدفع...</p>
-                </div>
 
                 <form id="paymentForm" onsubmit="handlePayment(event)">
                     <h2>📋 معلومات الطلب</h2>
@@ -161,17 +164,23 @@
                     <div class="total-row final"><span>المجموع:</span><span id="totalPrice">0 AED</span></div>
                 </div>
 
-                <div class="button-group">
+                <!-- أزرار قبل الدفع -->
+                <div class="button-group" id="beforePayment">
                     <button type="button" class="btn btn-cancel" onclick="goBack()">إلغاء</button>
                     <button type="submit" form="paymentForm" class="btn btn-pay" id="payBtn">💳 ادفع الآن عبر Ziina</button>
                 </div>
 
-                <button type="button" class="btn-check" id="checkPaymentBtn" onclick="goToTracking()">
-                    ✅ انتهيت من الدفع — تتبع طلبي
-                </button>
-
-                <div class="info-ziina" id="ziinaNote">
-                    💡 تم فتح صفحة Ziina في تبويب جديد. بعد إتمام الدفع اضغط الزر الأخضر أعلاه.
+                <!-- صندوق الانتظار بعد فتح Ziina -->
+                <div class="waiting-box" id="waitingBox">
+                    <p>💳 ادفع هذا المبلغ على Ziina:</p>
+                    <div class="amount-display" id="amountDisplay">0 AED</div>
+                    <p>بعد إتمام الدفع اضغط الزر أدناه</p>
+                    <button class="btn-done" onclick="goToTracking()">
+                        ✅ دفعت — تتبع طلبي
+                    </button>
+                    <button class="btn-reopen" onclick="reopenZiina()">
+                        🔗 إعادة فتح صفحة Ziina
+                    </button>
                 </div>
 
                 <div class="info-box" style="margin-top:15px;">
@@ -185,6 +194,7 @@
         let cart = [];
         let deliveryFee = 0;
         let currentOrder = null;
+        let ziinaUrl = 'https://pay.ziina.com/ar/sharjha11/';
 
         window.addEventListener('DOMContentLoaded', () => {
             loadCart();
@@ -234,7 +244,6 @@
             subtotalEl.textContent = subtotal + ' AED';
             document.getElementById('delivery').textContent = deliveryFee + ' AED';
             totalEl.textContent = (subtotal + deliveryFee) + ' AED';
-            document.getElementById('payBtn').disabled = false;
         }
 
         function handlePayment(event) {
@@ -248,7 +257,6 @@
                 showError('يرجى ملء جميع الحقول المطلوبة');
                 return;
             }
-            if (cart.length === 0) { showError('السلة فارغة!'); return; }
 
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             const total    = subtotal + deliveryFee;
@@ -263,38 +271,31 @@
                 paymentMethod: 'ziina'
             };
 
+            // حفظ الطلب
             const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
             orders.unshift(currentOrder);
             localStorage.setItem('cozOrders', JSON.stringify(orders));
             localStorage.setItem('lastOrder', JSON.stringify(currentOrder));
             localStorage.removeItem('cozCart');
 
-            const params = new URLSearchParams({
-                amount: total,
-                customer_name: name,
-                customer_phone: phone,
-                order_id: orderId,
-                description: 'COZ CAFE - ' + currentOrder.items.map(i => i.name).join(', ')
-            });
-            const ziinaUrl = 'https://pay.ziina.com/ar/sharjha11/?' + params.toString();
-
+            // فتح Ziina في تبويب جديد
             window.open(ziinaUrl, '_blank');
 
-            document.getElementById('payBtn').style.display = 'none';
-            document.getElementById('checkPaymentBtn').style.display = 'block';
-            document.getElementById('ziinaNote').style.display = 'block';
-            showSuccess('✅ تم فتح صفحة Ziina. بعد الدفع اضغط الزر الأخضر.');
+            // إظهار المبلغ وصندوق الانتظار
+            document.getElementById('amountDisplay').textContent = total + ' AED';
+            document.getElementById('beforePayment').style.display = 'none';
+            document.getElementById('waitingBox').style.display = 'block';
+        }
+
+        function reopenZiina() {
+            window.open(ziinaUrl, '_blank');
         }
 
         function goToTracking() {
             if (!currentOrder) {
                 const last = localStorage.getItem('lastOrder');
-                if (last) {
-                    currentOrder = JSON.parse(last);
-                } else {
-                    showError('لم يتم العثور على بيانات الطلب');
-                    return;
-                }
+                if (last) currentOrder = JSON.parse(last);
+                else { showError('لم يتم العثور على بيانات الطلب'); return; }
             }
             window.location.href = 'tracking.html?order=' + currentOrder.orderId;
         }
