@@ -6,214 +6,107 @@
     <title>نموذج الدفع - COZ CAFE</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
-            color: #333;
-            padding: 20px;
-            min-height: 100vh;
+            color: #333; padding: 20px; min-height: 100vh;
         }
-
         .payment-container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            overflow: hidden;
+            max-width: 900px; margin: 0 auto; background: white;
+            border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden;
         }
-
         .payment-header {
             background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+            color: white; padding: 30px; text-align: center;
         }
-
         .payment-header h1 { font-size: 28px; margin-bottom: 10px; }
-
-        .payment-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            padding: 30px;
-        }
-
+        .payment-content { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 30px; }
         .form-section { display: flex; flex-direction: column; }
-
         .form-section h2, .order-summary h2 {
-            color: #8B6914;
-            font-size: 18px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #D2B48C;
-            padding-bottom: 10px;
+            color: #8B6914; font-size: 18px; margin-bottom: 20px;
+            border-bottom: 2px solid #D2B48C; padding-bottom: 10px;
         }
-
         .form-group { margin-bottom: 15px; }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
+        .form-group label { display: block; margin-bottom: 8px; color: #555; font-weight: 600; font-size: 14px; }
         .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #D2B48C;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            transition: all 0.3s ease;
+            width: 100%; padding: 12px; border: 1px solid #D2B48C;
+            border-radius: 8px; font-size: 14px; font-family: inherit; transition: all 0.3s ease;
         }
-
         .form-group input:focus {
-            outline: none;
-            border-color: #8B6914;
-            box-shadow: 0 0 8px rgba(139,105,20,0.3);
-            background: #fffbf0;
+            outline: none; border-color: #8B6914;
+            box-shadow: 0 0 8px rgba(139,105,20,0.3); background: #fffbf0;
         }
-
         .order-summary {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 10px;
-            border-right: 4px solid #D2B48C;
+            background: #f9f9f9; padding: 20px;
+            border-radius: 10px; border-right: 4px solid #D2B48C;
         }
-
-        .cart-items {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            padding-right: 10px;
-        }
-
+        .cart-items { max-height: 300px; overflow-y: auto; margin-bottom: 20px; padding-right: 10px; }
         .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: white;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px; background: white; border-radius: 8px;
+            margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-
         .cart-item-info { flex: 1; }
         .cart-item-name { font-weight: 600; color: #333; font-size: 14px; }
         .cart-item-qty { color: #666; font-size: 12px; margin-top: 4px; }
         .cart-item-price { color: #8B6914; font-weight: 700; font-size: 14px; min-width: 60px; text-align: left; }
-
         .empty-cart { text-align: center; padding: 40px 20px; color: #999; font-size: 14px; }
-
-        .order-total {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            border-top: 2px solid #D2B48C;
-        }
-
+        .order-total { background: white; padding: 15px; border-radius: 8px; border-top: 2px solid #D2B48C; }
         .total-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
-
         .total-row.final {
-            font-size: 18px;
-            font-weight: 700;
-            color: #8B6914;
-            border-top: 1px solid #eee;
-            padding-top: 10px;
-            margin-top: 10px;
+            font-size: 18px; font-weight: 700; color: #8B6914;
+            border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px;
         }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-direction: column-reverse;
-        }
-
+        .button-group { display: flex; gap: 10px; margin-top: 20px; flex-direction: column-reverse; }
         .btn {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            width: 100%; padding: 14px; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;
         }
-
         .btn-cancel { background: #ccc; color: #333; }
         .btn-cancel:hover { background: #aaa; }
-
         .btn-pay {
             background: linear-gradient(135deg, #8B6914 0%, #D2B48C 100%);
-            color: white;
-            font-size: 18px;
+            color: white; font-size: 18px;
         }
-
         .btn-pay:hover {
             background: linear-gradient(135deg, #654321 0%, #C19A6B 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139,105,20,0.4);
+            transform: translateY(-2px); box-shadow: 0 5px 15px rgba(139,105,20,0.4);
         }
-
         .btn-pay:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-
-        .message {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-            border-right: 4px solid;
+        .btn-check {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white; margin-top: 10px; display: none;
+            font-size: 16px; font-weight: 700; padding: 16px;
+            border-radius: 8px; border: none; width: 100%; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(40,167,69,0.3);
         }
-
-        .message.error   { background: #f8d7da; color: #721c24; border-right-color: #f5c6cb; }
-        .message.success { background: #d4edda; color: #155724; border-right-color: #c3e6cb; }
-        .message.warning { background: #fff3cd; color: #856404; border-right-color: #ffeeba; }
-
+        .btn-check:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(40,167,69,0.4); }
+        .error-message {
+            background: #f8d7da; color: #721c24; padding: 12px;
+            border-radius: 8px; margin-bottom: 20px; display: none; border-right: 4px solid #f5c6cb;
+        }
+        .success-message {
+            background: #d4edda; color: #155724; padding: 12px;
+            border-radius: 8px; margin-bottom: 20px; display: none; border-right: 4px solid #c3e6cb;
+        }
         .loading { display: none; text-align: center; padding: 20px; }
-
         .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #8B6914;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
+            border: 3px solid #f3f3f3; border-top: 3px solid #8B6914;
+            border-radius: 50%; width: 40px; height: 40px;
+            animation: spin 1s linear infinite; margin: 0 auto;
         }
-
-        @keyframes spin {
-            0%   { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .info-box {
-            background: #fffbf0;
-            padding: 12px;
-            border-radius: 8px;
-            border-right: 3px solid #D2B48C;
-            margin-top: 15px;
-            font-size: 13px;
-            color: #666;
-            line-height: 1.6;
+            background: #fffbf0; padding: 12px; border-radius: 8px;
+            border-right: 3px solid #D2B48C; margin-top: 15px;
+            font-size: 13px; color: #666; line-height: 1.6;
         }
-
         .info-box strong { color: #8B6914; }
-
-        .ziina-note {
-            background: #e8f4fd;
-            border-right: 3px solid #2196F3;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-size: 13px;
-            color: #1565C0;
+        .info-ziina {
+            background: #e7f3ff; border-right: 3px solid #17a2b8;
+            padding: 12px; border-radius: 8px; margin-top: 10px;
+            font-size: 13px; color: #0c5460; line-height: 1.6; display: none;
         }
-
         @media (max-width: 768px) {
             .payment-content { grid-template-columns: 1fr; }
             .payment-header h1 { font-size: 22px; }
@@ -230,68 +123,55 @@
 
         <div class="payment-content">
             <div class="form-section">
-                <div class="message error"   id="errorMessage"></div>
-                <div class="message success" id="successMessage"></div>
-                <div class="message warning" id="warningMessage"></div>
-
+                <div class="error-message"   id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
                 <div class="loading" id="loadingSpinner">
                     <div class="spinner"></div>
-                    <p style="margin-top:15px;color:#666;">جاري تحويلك لصفحة الدفع...</p>
+                    <p style="margin-top:15px;color:#666;">جاري تحضير صفحة الدفع...</p>
                 </div>
 
                 <form id="paymentForm" onsubmit="handlePayment(event)">
                     <h2>📋 معلومات الطلب</h2>
-
                     <div class="form-group">
                         <label>الاسم الكامل *</label>
                         <input type="text" id="customerName" placeholder="أحمد محمد" required>
                     </div>
-
                     <div class="form-group">
                         <label>رقم الهاتف *</label>
                         <input type="tel" id="customerPhone" placeholder="0501234567" required>
                     </div>
-
                     <div class="form-group">
                         <label>رقم السيارة *</label>
                         <input type="text" id="carNumber" placeholder="مثال: UAE 1234" required>
                     </div>
-
                     <div class="info-box">
                         <strong>⚠️ ملاحظة:</strong> تأكد من صحة بيانات الطلب قبل المتابعة
-                    </div>
-
-                    <div class="ziina-note">
-                        💳 سيتم تحويلك لصفحة Ziina لإتمام الدفع بأمان
                     </div>
                 </form>
             </div>
 
             <div class="order-summary">
                 <h2>🛒 ملخص الطلب</h2>
-
                 <div class="cart-items" id="cartItemsList">
                     <div class="empty-cart">السلة فارغة</div>
                 </div>
-
                 <div class="order-total">
-                    <div class="total-row">
-                        <span>السعر:</span>
-                        <span id="subtotal">0 AED</span>
-                    </div>
-                    <div class="total-row">
-                        <span>التوصيل:</span>
-                        <span id="delivery">0 AED</span>
-                    </div>
-                    <div class="total-row final">
-                        <span>المجموع:</span>
-                        <span id="totalPrice">0 AED</span>
-                    </div>
+                    <div class="total-row"><span>السعر:</span><span id="subtotal">0 AED</span></div>
+                    <div class="total-row"><span>التوصيل:</span><span id="delivery">0 AED</span></div>
+                    <div class="total-row final"><span>المجموع:</span><span id="totalPrice">0 AED</span></div>
                 </div>
 
                 <div class="button-group">
                     <button type="button" class="btn btn-cancel" onclick="goBack()">إلغاء</button>
                     <button type="submit" form="paymentForm" class="btn btn-pay" id="payBtn">💳 ادفع الآن عبر Ziina</button>
+                </div>
+
+                <button type="button" class="btn-check" id="checkPaymentBtn" onclick="goToTracking()">
+                    ✅ انتهيت من الدفع — تتبع طلبي
+                </button>
+
+                <div class="info-ziina" id="ziinaNote">
+                    💡 تم فتح صفحة Ziina في تبويب جديد. بعد إتمام الدفع اضغط الزر الأخضر أعلاه.
                 </div>
 
                 <div class="info-box" style="margin-top:15px;">
@@ -304,50 +184,39 @@
     <script>
         let cart = [];
         let deliveryFee = 0;
-
-        const ZIINA_LINK = 'https://pay.ziina.com/ar/sharjha11/';
+        let currentOrder = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             loadCart();
-
             if (cart.length === 0) {
-                showWarning('السلة فارغة! سيتم التوجيه للموقع...');
+                showError('السلة فارغة! سيتم التوجيه للموقع...');
                 document.getElementById('payBtn').disabled = true;
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
+                setTimeout(() => { window.location.href = 'index.html'; }, 2000);
                 return;
             }
-
             renderCart();
         });
 
         function loadCart() {
-            try {
-                cart = JSON.parse(localStorage.getItem('cozCart')) || [];
-            } catch (e) {
-                cart = [];
-            }
+            try { cart = JSON.parse(localStorage.getItem('cozCart')) || []; }
+            catch (e) { cart = []; }
         }
 
         function renderCart() {
             const cartList   = document.getElementById('cartItemsList');
             const subtotalEl = document.getElementById('subtotal');
-            const deliveryEl = document.getElementById('delivery');
             const totalEl    = document.getElementById('totalPrice');
 
             if (cart.length === 0) {
                 cartList.innerHTML = '<div class="empty-cart">السلة فارغة 🛒</div>';
                 subtotalEl.textContent = '0 AED';
-                deliveryEl.textContent = '0 AED';
-                totalEl.textContent    = '0 AED';
+                totalEl.textContent = '0 AED';
                 document.getElementById('payBtn').disabled = true;
                 return;
             }
 
             let html = '';
             let subtotal = 0;
-
             cart.forEach(item => {
                 const itemTotal = item.price * item.quantity;
                 subtotal += itemTotal;
@@ -358,14 +227,13 @@
                             <div class="cart-item-qty">${item.quantity} × ${item.price} AED</div>
                         </div>
                         <div class="cart-item-price">${itemTotal} AED</div>
-                    </div>
-                `;
+                    </div>`;
             });
 
             cartList.innerHTML = html;
             subtotalEl.textContent = subtotal + ' AED';
-            deliveryEl.textContent = deliveryFee + ' AED';
-            totalEl.textContent    = (subtotal + deliveryFee) + ' AED';
+            document.getElementById('delivery').textContent = deliveryFee + ' AED';
+            totalEl.textContent = (subtotal + deliveryFee) + ' AED';
             document.getElementById('payBtn').disabled = false;
         }
 
@@ -380,89 +248,70 @@
                 showError('يرجى ملء جميع الحقول المطلوبة');
                 return;
             }
+            if (cart.length === 0) { showError('السلة فارغة!'); return; }
 
-            if (cart.length === 0) {
-                showError('السلة فارغة!');
-                return;
-            }
-
-            const ordersOpen = localStorage.getItem('ordersOpen') !== 'false';
-            if (!ordersOpen) {
-                showError('آسف! الطلبات مغلقة حالياً');
-                return;
-            }
-
-            // حفظ الطلب قبل التحويل
             const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             const total    = subtotal + deliveryFee;
             const orderId  = 'ORD-' + Date.now();
 
-            const orderData = {
-                orderId,
-                name,
-                phone,
-                carNumber,
+            currentOrder = {
+                orderId, name, phone, carNumber,
                 items: cart.map(i => ({ ...i })),
-                subtotal,
-                delivery: deliveryFee,
-                total,
+                subtotal, delivery: deliveryFee, total,
                 status: 'pending',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                paymentMethod: 'ziina'
             };
 
-            // حفظ الطلب في localStorage
-            localStorage.setItem('lastOrder', JSON.stringify(orderData));
             const orders = JSON.parse(localStorage.getItem('cozOrders') || '[]');
-            orders.unshift(orderData);
+            orders.unshift(currentOrder);
             localStorage.setItem('cozOrders', JSON.stringify(orders));
-
-            // تفريغ السلة
+            localStorage.setItem('lastOrder', JSON.stringify(currentOrder));
             localStorage.removeItem('cozCart');
 
-            // إظهار loading ثم التحويل لـ Ziina
-            showLoading(true);
-            showSuccess('✅ جاري تحويلك لصفحة الدفع...');
+            const params = new URLSearchParams({
+                amount: total,
+                customer_name: name,
+                customer_phone: phone,
+                order_id: orderId,
+                description: 'COZ CAFE - ' + currentOrder.items.map(i => i.name).join(', ')
+            });
+            const ziinaUrl = 'https://pay.ziina.com/ar/sharjha11/?' + params.toString();
 
-            setTimeout(() => {
-                window.location.href = ZIINA_LINK;
-            }, 1500);
+            window.open(ziinaUrl, '_blank');
+
+            document.getElementById('payBtn').style.display = 'none';
+            document.getElementById('checkPaymentBtn').style.display = 'block';
+            document.getElementById('ziinaNote').style.display = 'block';
+            showSuccess('✅ تم فتح صفحة Ziina. بعد الدفع اضغط الزر الأخضر.');
+        }
+
+        function goToTracking() {
+            if (!currentOrder) {
+                const last = localStorage.getItem('lastOrder');
+                if (last) {
+                    currentOrder = JSON.parse(last);
+                } else {
+                    showError('لم يتم العثور على بيانات الطلب');
+                    return;
+                }
+            }
+            window.location.href = 'tracking.html?order=' + currentOrder.orderId;
         }
 
         function showError(message) {
-            hideMessages();
             const el = document.getElementById('errorMessage');
-            el.textContent   = message;
-            el.style.display = 'block';
+            el.textContent = message; el.style.display = 'block';
             setTimeout(() => { el.style.display = 'none'; }, 5000);
         }
 
         function showSuccess(message) {
-            hideMessages();
             const el = document.getElementById('successMessage');
-            el.textContent   = message;
-            el.style.display = 'block';
-        }
-
-        function showWarning(message) {
-            hideMessages();
-            const el = document.getElementById('warningMessage');
-            el.textContent   = message;
-            el.style.display = 'block';
-        }
-
-        function hideMessages() {
-            document.getElementById('errorMessage').style.display   = 'none';
-            document.getElementById('successMessage').style.display = 'none';
-            document.getElementById('warningMessage').style.display = 'none';
-        }
-
-        function showLoading(show) {
-            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
-            document.getElementById('payBtn').disabled = show;
+            el.textContent = message; el.style.display = 'block';
         }
 
         function goBack() {
-            if (confirm('هل تريد إلغاء العملية والعودة للسلة؟')) {
+            if (confirm('هل تريد إلغاء العملية والعودة؟')) {
                 window.location.href = 'index.html';
             }
         }
